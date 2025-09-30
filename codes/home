@@ -1,0 +1,211 @@
+import Colors from '@/assets/Colors';
+import Search from '@/components/Search';
+import { useRouter } from 'expo-router';
+import { get, ref } from 'firebase/database';
+import {
+    collection,
+    getDocs,
+    orderBy,
+    query,
+    Timestamp,
+    where,
+    onSnapshot,
+} from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
+import {
+    Image,
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    StatusBar,
+    Text,
+    View,
+    Modal,
+    ActivityIndicator,
+} from 'react-native';
+import { auth, database, firestore } from '../../FirebaseConfig';
+import styles from '../../Styles/Home';
+import MasonryList from '@react-native-seoul/masonry-list';
+
+export default function Home() {
+
+    interface Note {
+        id: string;
+        title: string;
+        note: string;
+        createdAt: Timestamp;
+    }
+
+    const router = useRouter();
+    const [name, setName] = useState<string>('');
+    const [loading, setLoading] = useState(true);
+    const [loadingAll, setLoadingAll] = useState(true);
+    const [profileImage, setProfileImage] = useState<string | null>(null);
+    const [refreshing, setRefreshing] = useState(false);
+    const [notes, setNotes] = useState<Note[]>([]);
+
+    const fetchUserData = async () => {
+        const user = auth.currentUser;
+        if (user) {
+            try {
+                const userRef = ref(database, 'users/' + user.uid);
+                const snapshot = await get(userRef);
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    setName(data.name);
+                    if (data.profileImage) {
+                        setProfileImage(data.profileImage);
+                    }
+                } else {
+                    console.log("No data available");
+                }
+                const q = query(
+                    collection(firestore, 'notes'),
+                    where('uid', '==', user.uid),
+                    orderBy('createdAt', 'desc')
+                );
+
+                // const querySnapshot = await getDocs(q);
+                // const userNotes: any[] = [];
+                // querySnapshot.forEach((doc) => {
+                //     userNotes.push({ id: doc.id, ...doc.data() });
+                // });
+
+                const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                    const userNotes: any[] = [];
+                    querySnapshot.forEach((doc) => {
+                        userNotes.push({ id: doc.id, ...doc.data() })
+                    });
+                    setNotes(userNotes);
+                    setLoadingAll(false);
+                });
+
+                return unsubscribe;
+            } catch (error: any) {
+                console.error('Error fetching user data', error);
+            } finally {
+                setLoading(false);
+            }
+        } else {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const unsubscribePromise = fetchUserData();
+        return () => {
+            unsubscribePromise.then(unsub => unsub && unsub());
+        };
+    }, []);
+
+    useEffect(() => {
+        if (name) {
+            setLoadingAll(false);
+        }
+    }, [name, profileImage]);
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchUserData();
+        setRefreshing(false);
+    };
+
+    return (
+        <>
+            <StatusBar
+                hidden
+            />
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    <Text style={styles.headerText}>{name}</Text>
+                    <Pressable
+                        style={({ pressed }) => [
+                            styles.profile,
+                            pressed && styles.profilePress
+                        ]}
+                        onPress={() =>
+                            router.push({
+                                pathname: '/Profile',
+                                params: { name: name }
+                            })
+                        }
+                    >
+                        <Image
+                            source={profileImage ? { uri: profileImage } : require('../../assets/images/user.png')}
+                            style={styles.profileImage}
+                        />
+                    </Pressable>
+                </View>
+                <Search />
+                {loading
+                    ? (
+                        <Text style={styles.noteViewText}>Loading...</Text>
+                    ) : notes.length === 0 ? (
+                        <Text style={styles.noteViewText}>No notes yet</Text>
+                    ) : (
+                        <MasonryList
+                            data={notes}
+                            keyExtractor={(item) => (item as Note).id}
+                            numColumns={2}
+                            showsVerticalScrollIndicator={false}
+                            style={{ gap: 10 }}
+                            refreshControl={
+                                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} /> as any
+                            }
+                            renderItem={({ item }) => {
+                                const note = item as Note;
+                                return (
+                                    <Pressable
+                                        style={styles.noteItem}
+                                        onPress={() => { }}
+                                    >
+                                        <Text style={styles.noteTitle}>{note.title}</Text>
+                                        <Text
+                                            style={styles.noteText}
+                                            numberOfLines={2}
+                                        >{note.note}</Text>
+                                    </Pressable>
+                                );
+                            }}
+                        />
+
+                    )
+                }
+                <Modal
+                    transparent={true}
+                    animationType='none'
+                    visible={loadingAll}
+                    onRequestClose={() => { }}
+                >
+                    <View style={styles.modalView}>
+                        <ActivityIndicator
+                            size={60}
+                            color={Colors.white}
+                        />
+                        <Text>Loading...</Text>
+                    </View>
+                </Modal>
+            </View>
+            <View style={{
+                alignItems: 'center',
+                borderTopColor: Colors.grayLight,
+                borderTopWidth: 1,
+                backgroundColor: Colors.black,
+                height: 120,
+            }}>
+                <Pressable
+                    style={({ pressed }) => [
+                        styles.addView,
+                        pressed && styles.addPress
+                    ]}
+                    onPress={() => router.push('/(main)/(note)/NoteDetail')}
+                >
+                    <Image
+                        source={require('@/assets/icons/addIcon.png')}
+                        style={styles.addIcon}
+                    />
+                </Pressable>
+            </View>
+        </>
+    )
+}

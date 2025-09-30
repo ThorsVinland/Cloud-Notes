@@ -1,0 +1,98 @@
+import Colors from "@/assets/Colors";
+import { Dimensions, Platform, StatusBar, StyleSheet } from "react-native";
+
+const width = Dimensions.get("window").width;
+
+export default StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: Colors.black,
+        paddingHorizontal: 20,
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: Platform.OS === "android" ?
+            (StatusBar.currentHeight ?? 0) + 10
+            : 0
+        ,
+        paddingHorizontal: 10,
+    },
+    headerText: {
+        color: Colors.white,
+        fontSize: 30,
+        fontWeight: 'bold',
+        marginLeft: 10,
+    },
+    profile: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: Colors.white,
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+    },
+    profilePress: {
+        transform: [{ scale: 0.95 }]
+    },
+    profileImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    addView: {
+        backgroundColor: Colors.grayLight,
+        width: 70,
+        height: 70,
+        borderRadius: 100,
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        marginTop: 10,
+    },
+    addPress: {
+        transform: [{ scale: 0.95 }]
+    },
+    addIcon: {
+        height: 50,
+        width: 50,
+        resizeMode: 'cover',
+    },
+    noteItem: {
+        backgroundColor: Colors.grayDark,
+        padding: 15,
+        borderRadius: 10,
+        marginBottom: 10,
+    },
+    noteItemPress: {
+        opacity: 0.7,
+    },
+    noteTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: Colors.white,
+        marginBottom: 5,
+    },
+    noteText: {
+        fontSize: 14,
+        color: Colors.gray,
+    },
+    modalView: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    noteView: {
+        justifyContent: 'center',
+        marginTop: 40,
+    },
+    noteViewText: {
+        textAlign: 'center',
+        color: Colors.white,
+        fontSize: 25,
+        fontWeight: '600',
+    },
+});

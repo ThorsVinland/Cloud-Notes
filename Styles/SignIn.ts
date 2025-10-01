@@ -36,17 +36,16 @@ export default StyleSheet.create({
         fontWeight: 'bold',
     },
     textInout: {
-        // elevation: 10,
         height: 60,
         borderWidth: 1.2,
         borderColor: Colors.black,
         borderRadius: 13,
         backgroundColor: Colors.white,
-        paddingHorizontal: 20,
+        paddingRight: 40,
+        paddingLeft: 20,
         fontSize: 20,
         color: Colors.black,
         fontWeight: '500',
-        marginBottom: 30,
     },
     forgotView: {
         width: '45%',
@@ -108,5 +107,14 @@ export default StyleSheet.create({
         fontSize: 20,
         fontWeight: '700',
         color: Colors.black,
+    },
+    passwordView: {
+        justifyContent: 'center',
+        marginTop: 30,
+        marginBottom: 15,
+    },
+    passwordPress: {
+        position: 'absolute',
+        right: 10,
     },
 });

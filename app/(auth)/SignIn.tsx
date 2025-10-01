@@ -1,7 +1,7 @@
 import Colors from '@/assets/Colors';
 import { useRouter } from 'expo-router';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -9,10 +9,13 @@ import {
     StatusBar,
     Text,
     TextInput,
-    View
+    View,
+    TouchableWithoutFeedback,
+    Keyboard,
 } from 'react-native';
 import { auth } from '../../FirebaseConfig';
 import styles from '../../Styles/SignIn';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function SignIn() {
 
@@ -21,6 +24,8 @@ export default function SignIn() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [forgotLoading, setForgotLoading] = useState(false);
+    const [passwordShow, setPasswordShow] = useState(false);
+    const passwordRef = useRef<TextInput>(null);
 
     const handleSignIn = async () => {
         try {
@@ -77,9 +82,9 @@ export default function SignIn() {
     };
 
     return (
-        <>
-            <StatusBar hidden />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
             <View style={styles.container}>
+                <StatusBar hidden />
                 <View style={styles.header}>
                     <Text style={styles.headerText}>Cloud Note</Text>
                 </View>
@@ -93,16 +98,34 @@ export default function SignIn() {
                         style={styles.textInout}
                         value={email}
                         onChangeText={setEmail}
+                        returnKeyType='next'
+                        onSubmitEditing={() => passwordRef.current?.focus()}
                     />
-                    <TextInput
-                        placeholder='Password'
-                        placeholderTextColor={Colors.grayDark}
-                        cursorColor={Colors.black}
-                        autoCapitalize='none'
-                        style={styles.textInout}
-                        value={password}
-                        onChangeText={setPassword}
-                    />
+                    <View style={styles.passwordView}>
+                        <TextInput
+                            ref={passwordRef}
+                            placeholder='Password'
+                            placeholderTextColor={Colors.grayDark}
+                            cursorColor={Colors.black}
+                            autoCapitalize='none'
+                            style={styles.textInout}
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry={!passwordShow}
+                            returnKeyType='done'
+                            onSubmitEditing={handleSignIn}
+                        />
+                        <Pressable
+                            onPress={() => setPasswordShow(!passwordShow)}
+                            style={styles.passwordPress}
+                        >
+                            <Ionicons
+                                name={passwordShow ? 'eye' : 'eye-off'}
+                                size={30}
+                                color={Colors.black}
+                            />
+                        </Pressable>
+                    </View>
                     <View style={styles.forgotView}>
                         <Pressable
                             style={({ pressed }) => [
@@ -152,6 +175,6 @@ export default function SignIn() {
                     </View>
                 </View>
             </View>
-        </>
+        </TouchableWithoutFeedback>
     )
 }

@@ -1,31 +1,62 @@
 import { auth, database } from '@/FirebaseConfig';
 import Colors from '@/assets/Colors';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { signOut } from 'firebase/auth';
-import React, { useState, useEffect } from 'react';
+import { onValue, ref, set } from 'firebase/database';
+import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
+    Alert,
     Image,
+    Modal,
     Pressable,
     Text,
-    View,
-    Alert,
-    RefreshControl,
-    ScrollView,
+    TextInput,
+    View
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import styles from '../../Styles/Profile';
-import { set, ref } from 'firebase/database';
-import * as ImagePicker from 'expo-image-picker';
-import { onValue } from 'firebase/database';
 
 export default function Profile() {
 
     const router = useRouter();
     const { name } = useLocalSearchParams();
+    const [userName, setUserName] = useState('');
     const [loadingOut, setLoadingOut] = useState(false);
     const [image, setImage] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [newName, setNewName] = useState('');
+
+    const openChangeNameModal = () => {
+        setModalVisible(true);
+    };
+
+    const handleSaveName = async () => {
+        if (newName.trim() && auth.currentUser) {
+            try {
+                await set(
+                    ref(database, 'users/' + auth.currentUser.uid + '/name'),
+                    newName.trim()
+                );
+                setModalVisible(false);
+                setNewName('');
+                Toast.show({
+                    type: "success",
+                    text1: "Name updated successfully!",
+                });
+            } catch (error: any) {
+                console.log('Error updating name: ', error);
+                Toast.show({
+                    type: "error",
+                    text1: "Failed to update name.",
+                });
+            }
+        }
+    };
 
     const handleLogout = async () => {
         try {
@@ -50,6 +81,40 @@ export default function Profile() {
         if (!result.canceled) {
             uploadImage(result.assets[0].uri);
         }
+    };
+
+    const handleImageOptions = () => {
+        Alert.alert(
+            "Profile Image",
+            "Choose an option",
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel"
+                },
+                {
+                    text: "Remove Image",
+                    onPress: async () => {
+                        if (auth.currentUser) {
+                            await set(ref(database, 'users/' + auth.currentUser.uid + '/profileImage'), null);
+                            setImage(null);
+                            Toast.show({
+                                type: "success",
+                                text1: "Profile image removed!",
+                            });
+                        }
+                    },
+                    style: "destructive"
+                },
+                {
+                    text: "Change Image",
+                    onPress: pickImage
+                },
+            ],
+            {
+                cancelable: true,
+            }
+        );
     };
 
     useEffect(() => {
@@ -106,12 +171,24 @@ export default function Profile() {
         }
     };
 
+    useEffect(() => {
+        if (auth.currentUser) {
+            const nameRef = ref(database, 'users/' + auth.currentUser.uid + '/name');
+            const unsubscribe = onValue(nameRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    setUserName(snapshot.val());
+                }
+            });
+            return () => unsubscribe();
+        }
+    }, []);
+
 
     return (
         <View style={styles.container}>
             <Pressable
                 style={styles.imageView}
-                onPress={pickImage}
+                onPress={handleImageOptions}
             >
                 {uploading ? (
                     <ActivityIndicator
@@ -125,7 +202,25 @@ export default function Profile() {
                     />
                 )}
             </Pressable>
-            <Text style={styles.name}>{String(name)}</Text>
+            <View style={styles.nameView}>
+                <Text
+                    style={styles.name}
+                    numberOfLines={2}
+                >{userName || 'No name'}</Text>
+                <Pressable
+                    style={({ pressed }) => [
+                        styles.editName,
+                        pressed && styles.editNamePress
+                    ]}
+                    onPress={openChangeNameModal}
+                >
+                    <Ionicons
+                        name='create-outline'
+                        size={30}
+                        color={Colors.white}
+                    />
+                </Pressable>
+            </View>
             <Pressable
                 style={({ pressed }) => [
                     styles.logoutView,
@@ -142,6 +237,68 @@ export default function Profile() {
                     <Text style={styles.logoutText}>Log out</Text>
                 )}
             </Pressable>
+            <Modal
+                animationType='slide'
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View>
+                        <Text
+                            style={{
+                                fontSize: 18,
+                                marginBottom: 10,
+                                color: Colors.white,
+                                marginTop: 250,
+                            }}
+                        >Enter your name</Text>
+                        <View style={{ justifyContent: 'center' }}>
+                            <TextInput
+                                placeholder='New name'
+                                placeholderTextColor={Colors.gray}
+                                value={newName}
+                                onChangeText={setNewName}
+                                style={styles.ModalTextInput}
+
+                            />
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.ModalDeleteTextPress,
+                                    pressed && { opacity: 0.6 }
+                                ]}
+                                onPress={() => setNewName('')}
+                            >
+                                <Ionicons
+                                    name='close-circle'
+                                    size={24}
+                                    color={Colors.grayLight}
+                                />
+                            </Pressable>
+                        </View>
+                        <View style={styles.ModalSaveView}>
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.ModalSavePress,
+                                    pressed && { opacity: 0.6 }
+                                ]}
+                                onPress={handleSaveName}
+                            >
+                                <Text style={styles.ModalSavePressText}>Save</Text>
+                            </Pressable>
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.ModalSavePress,
+                                    pressed && { opacity: 0.6 }
+                                ]}
+                                onPress={() => setModalVisible(false)}
+                            >
+                                <Text style={styles.ModalSavePressText}>Cancel</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     )
 }

@@ -1,7 +1,7 @@
 import Colors from '@/assets/Colors';
 import Search from '@/components/Search';
 import { useRouter } from 'expo-router';
-import { get, ref } from 'firebase/database';
+import { get, ref, onValue } from 'firebase/database';
 import {
     collection,
     orderBy,
@@ -148,7 +148,7 @@ export default function Home() {
         } else {
             const lowerQuery = query.toLowerCase();
             const results = notes.filter(
-                (n) => 
+                (n) =>
                     n.title.toLowerCase().includes(lowerQuery) ||
                     n.note.toLowerCase().includes(lowerQuery)
             );
@@ -161,6 +161,23 @@ export default function Home() {
             setFilteredNotes(notes);
         }
     }, [notes]);
+
+    useEffect(() => {
+        const user = auth.currentUser;
+        if (user) {
+            const userRef = ref(database, 'users/' + user.uid);
+            const unsubscribe = onValue(userRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    setName(data.name || '');
+                    setProfileImage(data.profileImage || null);
+                }
+                setLoading(false);
+            });
+
+            return () => unsubscribe();
+        }
+    }, []);
 
     return (
         <>

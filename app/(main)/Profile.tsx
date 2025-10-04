@@ -30,6 +30,7 @@ export default function Profile() {
     const [refreshing, setRefreshing] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [newName, setNewName] = useState('');
+    const [bottomVisible, setBottomVisible] = useState(false);
 
     const openChangeNameModal = () => {
         setModalVisible(true);
@@ -80,41 +81,12 @@ export default function Profile() {
 
         if (!result.canceled) {
             uploadImage(result.assets[0].uri);
+            setBottomVisible(false);
         }
     };
 
     const handleImageOptions = () => {
-        Alert.alert(
-            "Profile Image",
-            "Choose an option",
-            [
-                {
-                    text: "Cancel",
-                    style: "cancel"
-                },
-                {
-                    text: "Remove Image",
-                    onPress: async () => {
-                        if (auth.currentUser) {
-                            await set(ref(database, 'users/' + auth.currentUser.uid + '/profileImage'), null);
-                            setImage(null);
-                            Toast.show({
-                                type: "success",
-                                text1: "Profile image removed!",
-                            });
-                        }
-                    },
-                    style: "destructive"
-                },
-                {
-                    text: "Change Image",
-                    onPress: pickImage
-                },
-            ],
-            {
-                cancelable: true,
-            }
-        );
+        setBottomVisible(true);
     };
 
     useEffect(() => {
@@ -156,20 +128,24 @@ export default function Profile() {
                 await set(ref(database, 'users/' + auth.currentUser.uid + '/profileImage'), json.secure_url);
             }
 
-            Alert.alert(
-                'Success',
-                'Image uploaded successfuly!',
-            );
+            Toast.show({
+                type: "success",
+                text1: "Image uploaded successfully!",
+            });
+
         } catch (error: any) {
             console.log('Upload error: ', error);
-            Alert.alert(
-                "Error",
-                "Failed to upload image."
-            );
+
+            Toast.show({
+                type: "error",
+                text1: "Failed to upload image.",
+            });
+
         } finally {
             setUploading(false);
         }
     };
+
 
     useEffect(() => {
         if (auth.currentUser) {
@@ -298,6 +274,65 @@ export default function Profile() {
                         </View>
                     </View>
                 </View>
+            </Modal>
+            <Modal
+                visible={bottomVisible}
+                transparent
+                animationType='slide'
+                onRequestClose={() => setBottomVisible(false)}
+            >
+                <Pressable
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        justifyContent: 'flex-end',
+                    }}
+                    onPress={() => setBottomVisible(false)}
+                >
+                    <View
+                        style={{
+                            backgroundColor: Colors.white,
+                            padding: 20,
+                            borderTopLeftRadius: 20,
+                            borderTopRightRadius: 20,
+                        }}
+                    >
+                        <Pressable
+                            onPress={pickImage}
+                            style={{ padding: 15 }}
+                        >
+                            <Text style={{ fontSize: 18 }}>Change Image</Text>
+                        </Pressable>
+                        <Pressable
+                            onPress={async () => {
+                                if (auth.currentUser) {
+                                    await set(ref(database, 'users/' + auth.currentUser.uid + '/profileImage'), null);
+                                    setImage(null);
+                                    Toast.show({
+                                        type: "success",
+                                        text1: "Profile image removed!",
+                                    });
+                                }
+                                setBottomVisible(false);
+                            }}
+                            style={{ padding: 15 }}
+                        >
+                            <Text style={{
+                                fontSize: 18,
+                                color: 'red',
+                            }}>Remove Image</Text>
+                        </Pressable>
+                        <Pressable
+                            onPress={() => setBottomVisible(false)}
+                            style={{ padding: 15 }}
+                        >
+                            <Text style={{
+                                fontSize: 18,
+                                color: "gray",
+                            }}>Cancel</Text>
+                        </Pressable>
+                    </View>
+                </Pressable>
             </Modal>
         </View>
     )

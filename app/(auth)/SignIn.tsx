@@ -16,6 +16,7 @@ import {
 import { auth } from '../../FirebaseConfig';
 import styles from '../../Styles/SignIn';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import Toast from 'react-native-toast-message';
 
 export default function SignIn() {
 
@@ -26,8 +27,36 @@ export default function SignIn() {
     const [forgotLoading, setForgotLoading] = useState(false);
     const [passwordShow, setPasswordShow] = useState(false);
     const passwordRef = useRef<TextInput>(null);
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+
+    const validate = () => {
+        let valid = true;
+        setEmailError('');
+        setPasswordError('');
+
+        if (!email.trim()) {
+            setEmailError('Email is required');
+            valid = false;
+        } else if (!/\S+@\S+\.\S+/.test(email)) {
+            setEmailError('Enter a valid email');
+            valid = false;
+        }
+
+        if (!password.trim()) {
+            setPasswordError("Password is required");
+            valid = false;
+        } else if (password.length < 6) {
+            setPasswordError("Password must be at least 6 characters");
+            valid = false;
+        }
+
+        return valid;
+    };
 
     const handleSignIn = async () => {
+        if (!validate()) return;
+
         try {
             setLoading(true);
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -35,46 +64,44 @@ export default function SignIn() {
             router.replace('/Home');
         } catch (error: any) {
             console.error('Error: ', error);
+
+            if (error.code === "auth/invalid-credential") {
+                setPasswordError("Invalid email or password");
+            } else if (error.code === "auth/user-not-found") {
+                setEmailError("No user found with this email");
+            } else {
+                setPasswordError("Failed to sign in. Try again");
+            }
+
             setLoading(false);
         }
     };
 
     const handleForgotPassword = async () => {
         if (!email) {
-            Alert.alert(
-                'Missing Email',
-                'Pleas enter your email first.'
-            );
+            setEmailError("Please enter your email first");
             return;
         }
 
         try {
             setForgotLoading(true);
             await sendPasswordResetEmail(auth, email);
-            Alert.alert(
-                'Password Reset',
-                'A password reset link has been sent to your email.\nCheck spam'
-            );
+
+            Toast.show({
+                type: "Password Reset",
+                text1: 'A password reset link has been sent to your email.\nCheck spam',
+            });
+
             setForgotLoading(false);
         } catch (error: any) {
             console.log('Email !!!!');
 
-            switch (error.code) {
-                case "auth/invalid-email":
-                    Alert.alert("Invalid Email", "Please enter a valid email address.");
-                    break;
-
-                case "auth/user-not-found":
-                    Alert.alert("User Not Found", "No account exists with this email.");
-                    break;
-
-                case "auth/missing-email":
-                    Alert.alert("Missing Email", "Please enter your email first.");
-                    break;
-
-                default:
-                    Alert.alert("Error", error.message);
-                    break;
+            if (error.code === "auth/invalid-email") {
+                setEmailError("Invalid email address");
+            } else if (error.code === "auth/user-not-found") {
+                setEmailError("No account exists with this email");
+            } else {
+                setEmailError("Something went wrong");
             }
 
             setForgotLoading(false);
@@ -90,6 +117,7 @@ export default function SignIn() {
                 </View>
                 <View style={styles.body}>
                     <Text style={styles.bodyText}>Sign In</Text>
+
                     <TextInput
                         placeholder='Email'
                         placeholderTextColor={Colors.grayDark}
@@ -101,6 +129,13 @@ export default function SignIn() {
                         returnKeyType='next'
                         onSubmitEditing={() => passwordRef.current?.focus()}
                     />
+                    {/* {emailError ? (
+                        <Text style={{
+                            color: 'red',
+                            marginBottom: 10,
+                        }}>{emailError}</Text>
+                    ) : null} */}
+
                     <View style={styles.passwordView}>
                         <TextInput
                             ref={passwordRef}

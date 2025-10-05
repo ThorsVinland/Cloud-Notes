@@ -6,7 +6,7 @@ const width = Dimensions.get("window").width;
 export default StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.dark.primary,
         paddingHorizontal: 20,
     },
     header: {
@@ -20,7 +20,7 @@ export default StyleSheet.create({
         paddingHorizontal: 10,
     },
     headerText: {
-        color: Colors.white,
+        color: Colors.dark.white,
         fontSize: 30,
         fontWeight: 'bold',
         marginLeft: 10,
@@ -29,7 +29,7 @@ export default StyleSheet.create({
         width: 50,
         height: 50,
         borderRadius: 25,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.dark.white,
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
@@ -43,7 +43,7 @@ export default StyleSheet.create({
         resizeMode: 'cover',
     },
     addView: {
-        backgroundColor: Colors.grayLight,
+        backgroundColor: Colors.dark.grayDark,
         width: 70,
         height: 70,
         borderRadius: 100,
@@ -61,7 +61,7 @@ export default StyleSheet.create({
         resizeMode: 'cover',
     },
     noteItem: {
-        backgroundColor: Colors.grayDark,
+        backgroundColor: Colors.dark.grayDark,
         padding: 15,
         borderRadius: 10,
         marginBottom: 10,
@@ -72,12 +72,12 @@ export default StyleSheet.create({
     noteTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: Colors.white,
+        color: Colors.dark.white,
         marginBottom: 5,
     },
     noteText: {
         fontSize: 14,
-        color: Colors.gray,
+        color: Colors.dark.gray,
     },
     modalView: {
         flex: 1,
@@ -91,7 +91,7 @@ export default StyleSheet.create({
     },
     noteViewText: {
         textAlign: 'center',
-        color: Colors.white,
+        color: Colors.dark.white,
         fontSize: 25,
         fontWeight: '600',
     },

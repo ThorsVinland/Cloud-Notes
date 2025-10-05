@@ -4,14 +4,14 @@ import { StyleSheet } from "react-native";
 export default StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.dark.primary,
         paddingHorizontal: 20,
     },
     imageView: {
         height: 150,
         width: 150,
         borderRadius: 75,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.dark.white,
         alignSelf: 'center',
         marginTop: 100,
         overflow: 'hidden',
@@ -31,7 +31,7 @@ export default StyleSheet.create({
     name: {
         fontSize: 30,
         fontWeight: 'bold',
-        color: Colors.white,
+        color: Colors.dark.white,
         marginHorizontal: 45,
     },
     editName: {
@@ -57,13 +57,12 @@ export default StyleSheet.create({
         transform: [{ scale: 0.96 }]
     },
     logoutText: {
-        color: Colors.white,
+        color: Colors.dark.white,
         fontSize: 20,
         fontWeight: '800',
     },
     modalContainer: {
         flex: 1,
-        // justifyContent: 'center',
         paddingHorizontal: 20,
         backgroundColor: 'rgba(0, 0, 0, 0.94)',
     },
@@ -76,11 +75,11 @@ export default StyleSheet.create({
     },
     ModalTextInput: {
         borderWidth: 1,
-        borderColor: Colors.white,
+        borderColor: Colors.dark.white,
         borderRadius: 10,
         height: 60,
         fontSize: 20,
-        color: Colors.white,
+        color: Colors.dark.white,
         paddingLeft: 18,
         paddingRight: 40,
     },
@@ -96,14 +95,14 @@ export default StyleSheet.create({
         gap: 20,
     },
     ModalSavePress: {
-        backgroundColor: Colors.grayLight,
+        backgroundColor: Colors.dark.grayLight,
         width: 120,
         alignItems: 'center',
         paddingVertical: 10,
         borderRadius: 10,
     },
     ModalSavePressText: {
-        color: Colors.black,
+        color: Colors.dark.primary,
         fontSize: 18,
         fontWeight: '700',
     },

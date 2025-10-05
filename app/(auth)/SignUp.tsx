@@ -1,22 +1,21 @@
 import Colors from '@/assets/Colors';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { ref, set } from 'firebase/database';
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     ActivityIndicator,
-    Image,
+    Keyboard,
     Pressable,
     StatusBar,
     Text,
     TextInput,
-    View,
     TouchableWithoutFeedback,
-    Keyboard,
+    View
 } from 'react-native';
 import { auth, database } from '../../FirebaseConfig';
 import styles from '../../Styles/SignUp';
-import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function SignUp() {
 
@@ -62,8 +61,8 @@ export default function SignUp() {
                     <Text style={styles.bodyText}>Sign Up</Text>
                     <TextInput
                         placeholder='Name'
-                        placeholderTextColor={Colors.grayDark}
-                        cursorColor={Colors.black}
+                        placeholderTextColor={Colors.dark.gray}
+                        cursorColor={Colors.dark.primary}
                         style={[styles.textInout, { marginBottom: 30, }]}
                         value={name}
                         onChangeText={setName}
@@ -73,8 +72,8 @@ export default function SignUp() {
                     <TextInput
                         ref={emailRef}
                         placeholder='Email'
-                        placeholderTextColor={Colors.grayDark}
-                        cursorColor={Colors.black}
+                        placeholderTextColor={Colors.dark.gray}
+                        cursorColor={Colors.dark.primary}
                         autoCapitalize='none'
                         style={[styles.textInout, { marginBottom: 30, }]}
                         value={email}
@@ -86,8 +85,8 @@ export default function SignUp() {
                         <TextInput
                             ref={passwordRef}
                             placeholder='Password'
-                            placeholderTextColor={Colors.grayDark}
-                            cursorColor={Colors.black}
+                            placeholderTextColor={Colors.dark.gray}
+                            cursorColor={Colors.dark.primary}
                             autoCapitalize='none'
                             style={styles.textInout}
                             value={password}
@@ -104,7 +103,7 @@ export default function SignUp() {
                                 passwordShow ? 'eye' : 'eye-off'
                             }
                             size={30}
-                            color={Colors.black}
+                            color={Colors.dark.primary}
                         />
                         </Pressable>
                     </View>
@@ -118,7 +117,7 @@ export default function SignUp() {
                         {loading ? (
                             <ActivityIndicator
                                 size={'large'}
-                                color={Colors.white}
+                                color={Colors.dark.white}
                             />
                         ) : (
                             <Text style={styles.signupText}>Sign up</Text>

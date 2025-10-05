@@ -44,7 +44,7 @@ export default function Index() {
         <View style={styles.container}>
           <ActivityIndicator
             size={50}
-            color={Colors.white}
+            color={Colors.dark.white}
           />
           <Text style={styles.text}>Loading...</Text>
         </View>
@@ -61,11 +61,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 20,
-    backgroundColor: Colors.black,
+    backgroundColor: Colors.dark.primary,
   },
   text: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: Colors.white
+    color: Colors.dark.white
   },
 });

@@ -87,7 +87,7 @@ export default function Note() {
                 <View style={styles.indicatorContainer}>
                     <ActivityIndicator
                         size={60}
-                        color={Colors.white}
+                        color={Colors.dark.white}
                     />
                 </View>
             ) : (
@@ -103,7 +103,7 @@ export default function Note() {
                                     ]}
                                     onPress={handleCopy}
                                 >
-                                    <Ionicons name='copy' color={Colors.white} size={30} />
+                                    <Ionicons name='copy' color={Colors.dark.white} size={30} />
                                 </Pressable>
                             </View>
                             <View style={styles.body}>
@@ -123,7 +123,7 @@ export default function Note() {
                         style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
                         onPress={handleShare}
                     >
-                        <Ionicons name="share-social-outline" size={28} color={Colors.white} />
+                        <Ionicons name="share-social-outline" size={28} color={Colors.dark.white} />
                     </Pressable>
                     <Text style={styles.iconText}>Share</Text>
                 </View>
@@ -144,7 +144,7 @@ export default function Note() {
                             params: { id, title, note }
                         })}
                     >
-                        <Ionicons name="create-outline" size={28} color={Colors.white} />
+                        <Ionicons name="create-outline" size={28} color={Colors.dark.white} />
                     </Pressable>
                     <Text style={styles.iconText}>Edit</Text>
                 </View>

@@ -1,11 +1,11 @@
+import Colors from '@/assets/Colors';
+import React from 'react';
 import {
-    View,
-    Text,
     Modal,
     Pressable,
+    Text,
+    View,
 } from 'react-native';
-import React from 'react';
-import Colors from '@/assets/Colors';
 
 type CustomAlertProps = {
     visible: boolean;
@@ -43,7 +43,7 @@ export default function CustomAlert({
                 <Pressable
                     style={{
                         width: '80%',
-                        backgroundColor: Colors.white,
+                        backgroundColor: Colors.dark.white,
                         padding: 20,
                         borderRadius: 12,
                         elevation: 5,
@@ -55,13 +55,13 @@ export default function CustomAlert({
                             fontSize: 23,
                             fontWeight: 'bold',
                             marginBottom: 10,
-                            color: Colors.black,
+                            color: Colors.dark.primary,
                         }}
                     >{title}</Text>
                     <Text
                         style={{
                             fontSize: 16,
-                            color: Colors.black,
+                            color: Colors.dark.primary,
                             marginBottom: 20,
                         }}
                     >

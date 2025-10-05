@@ -1,22 +1,21 @@
 import Colors from '@/assets/Colors';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
-import React, { useState, useRef } from 'react';
+import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
+import React, { useRef, useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
+    Keyboard,
     Pressable,
     StatusBar,
     Text,
     TextInput,
-    View,
     TouchableWithoutFeedback,
-    Keyboard,
+    View
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { auth } from '../../FirebaseConfig';
 import styles from '../../Styles/SignIn';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import Toast from 'react-native-toast-message';
 
 export default function SignIn() {
 
@@ -72,7 +71,8 @@ export default function SignIn() {
             } else {
                 setPasswordError("Failed to sign in. Try again");
             }
-
+            setLoading(false);
+        } finally {
             setLoading(false);
         }
     };
@@ -88,8 +88,9 @@ export default function SignIn() {
             await sendPasswordResetEmail(auth, email);
 
             Toast.show({
-                type: "Password Reset",
-                text1: 'A password reset link has been sent to your email.\nCheck spam',
+                type: "success",
+                text1: "Password reset link sent",
+                text2: "Check your inbox or spam folder",
             });
 
             setForgotLoading(false);
@@ -120,32 +121,39 @@ export default function SignIn() {
 
                     <TextInput
                         placeholder='Email'
-                        placeholderTextColor={Colors.grayDark}
-                        cursorColor={Colors.black}
+                        placeholderTextColor={Colors.dark.gray}
+                        cursorColor={Colors.dark.primary}
                         autoCapitalize='none'
                         style={styles.textInout}
                         value={email}
-                        onChangeText={setEmail}
+                        onChangeText={(text) => {
+                            setEmail(text);
+                            if (emailError) setEmailError('');
+                        }}
                         returnKeyType='next'
                         onSubmitEditing={() => passwordRef.current?.focus()}
                     />
-                    {/* {emailError ? (
-                        <Text style={{
-                            color: 'red',
-                            marginBottom: 10,
-                        }}>{emailError}</Text>
-                    ) : null} */}
+                    <View style={styles.errorView}>
+                        {emailError ? (
+                            <Text style={{
+                                color: 'red',
+                            }}>{emailError}</Text>
+                        ) : null}
+                    </View>
 
                     <View style={styles.passwordView}>
                         <TextInput
                             ref={passwordRef}
                             placeholder='Password'
-                            placeholderTextColor={Colors.grayDark}
-                            cursorColor={Colors.black}
+                            placeholderTextColor={Colors.dark.gray}
+                            cursorColor={Colors.dark.primary}
                             autoCapitalize='none'
                             style={styles.textInout}
                             value={password}
-                            onChangeText={setPassword}
+                            onChangeText={(text) => {
+                                setPassword(text);
+                                if (passwordError) setPasswordError('');
+                            }}
                             secureTextEntry={!passwordShow}
                             returnKeyType='done'
                             onSubmitEditing={handleSignIn}
@@ -157,9 +165,17 @@ export default function SignIn() {
                             <Ionicons
                                 name={passwordShow ? 'eye' : 'eye-off'}
                                 size={30}
-                                color={Colors.black}
+                                color={Colors.dark.primary}
                             />
                         </Pressable>
+                    </View>
+
+                    <View style={styles.errorView}>
+                        {passwordError ? (
+                            <Text style={{
+                                color: 'red',
+                            }}>{passwordError}</Text>
+                        ) : null}
                     </View>
                     <View style={styles.forgotView}>
                         <Pressable
@@ -171,7 +187,7 @@ export default function SignIn() {
                             {forgotLoading ? (
                                 <ActivityIndicator
                                     size={30}
-                                    color={Colors.black}
+                                    color={Colors.dark.primary}
                                     style={{ alignSelf: 'center' }}
                                 />
                             ) : (
@@ -190,7 +206,7 @@ export default function SignIn() {
                         {loading ? (
                             <ActivityIndicator
                                 size={'large'}
-                                color={Colors.white}
+                                color={Colors.dark.white}
                             />
                         ) : (
                             <Text style={styles.signinText}>Sign in</Text>

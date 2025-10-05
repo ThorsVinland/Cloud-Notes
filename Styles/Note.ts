@@ -4,7 +4,7 @@ import { StyleSheet } from "react-native";
 export default StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.dark.primary,
     },
     indicatorContainer: {
         flex: 1,
@@ -14,12 +14,12 @@ export default StyleSheet.create({
     title: {
         fontSize: 30,
         fontWeight: 'bold',
-        color: Colors.white,
+        color: Colors.dark.white,
     },
     note: {
         fontSize: 25,
         fontWeight: '600',
-        color: Colors.white,
+        color: Colors.dark.white,
     },
     header: {
         height: 140,
@@ -35,25 +35,25 @@ export default StyleSheet.create({
     bottomBar: {
         height: 100,
         borderTopWidth: 1,
-        borderTopColor: Colors.white,
+        borderTopColor: Colors.dark.white,
         position: 'relative',
         bottom: 0,
         flexDirection: 'row',
         justifyContent: 'space-around',
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.dark.primary,
     },
     iconText: {
-        color: Colors.white,
+        color: Colors.dark.white,
         fontSize: 20,
     },
     copy: {
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.dark.primary,
         height: 50,
         width: 50,
         borderRadius: 25,
         alignItems: 'center',
         justifyContent: 'center',
-        borderColor: Colors.white,
+        borderColor: Colors.dark.white,
         borderWidth: 1,
     },
     copyPress: {

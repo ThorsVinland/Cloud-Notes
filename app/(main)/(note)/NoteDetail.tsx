@@ -99,14 +99,14 @@ export default function noteDetail() {
             <View style={styles.textInputView}>
                 <TextInput
                     placeholder='Title'
-                    placeholderTextColor={Colors.grayDark}
+                    placeholderTextColor={Colors.dark.gray}
                     style={[styles.textInput, { fontWeight: '900', height: 60, }]}
                     value={title}
                     onChangeText={setTitle}
                 />
                 <TextInput
                     placeholder='Note'
-                    placeholderTextColor={Colors.grayDark}
+                    placeholderTextColor={Colors.dark.gray}
                     style={[styles.textInput, {
                         fontWeight: '600',
                         height: 300,
@@ -125,7 +125,7 @@ export default function noteDetail() {
                             <Ionicons
                                 name='checkmark-circle'
                                 size={60}
-                                color={Colors.white}
+                                color={Colors.dark.white}
                                 style={{ opacity: pressed ? 0.6 : 1 }}
                             />
                         )}
@@ -137,7 +137,7 @@ export default function noteDetail() {
                             <Ionicons
                                 name='close-circle'
                                 size={60}
-                                color={Colors.white}
+                                color={Colors.dark.white}
                                 style={{ opacity: pressed ? 0.6 : 1 }}
                             />
                         )}
@@ -158,7 +158,7 @@ export default function noteDetail() {
                 }}>
                     <ActivityIndicator
                         size={60}
-                        color={Colors.white}
+                        color={Colors.dark.white}
                     />
                 </View>
             </Modal>

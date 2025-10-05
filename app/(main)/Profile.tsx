@@ -8,7 +8,6 @@ import { onValue, ref, set } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     Image,
     Modal,
     Pressable,
@@ -169,7 +168,7 @@ export default function Profile() {
                 {uploading ? (
                     <ActivityIndicator
                         size={70}
-                        color={Colors.black}
+                        color={Colors.dark.primary}
                     />
                 ) : (
                     <Image
@@ -193,7 +192,7 @@ export default function Profile() {
                     <Ionicons
                         name='create-outline'
                         size={30}
-                        color={Colors.white}
+                        color={Colors.dark.white}
                     />
                 </Pressable>
             </View>
@@ -207,7 +206,7 @@ export default function Profile() {
                 {loadingOut ? (
                     <ActivityIndicator
                         size={'large'}
-                        color={Colors.white}
+                        color={Colors.dark.white}
                     />
                 ) : (
                     <Text style={styles.logoutText}>Log out</Text>
@@ -225,14 +224,14 @@ export default function Profile() {
                             style={{
                                 fontSize: 18,
                                 marginBottom: 10,
-                                color: Colors.white,
+                                color: Colors.dark.white,
                                 marginTop: 250,
                             }}
                         >Enter your name</Text>
                         <View style={{ justifyContent: 'center' }}>
                             <TextInput
                                 placeholder='New name'
-                                placeholderTextColor={Colors.gray}
+                                placeholderTextColor={Colors.dark.gray}
                                 value={newName}
                                 onChangeText={setNewName}
                                 style={styles.ModalTextInput}
@@ -248,7 +247,7 @@ export default function Profile() {
                                 <Ionicons
                                     name='close-circle'
                                     size={24}
-                                    color={Colors.grayLight}
+                                    color={Colors.dark.grayLight}
                                 />
                             </Pressable>
                         </View>
@@ -291,7 +290,7 @@ export default function Profile() {
                 >
                     <View
                         style={{
-                            backgroundColor: Colors.white,
+                            backgroundColor: Colors.dark.white,
                             padding: 20,
                             borderTopLeftRadius: 20,
                             borderTopRightRadius: 20,

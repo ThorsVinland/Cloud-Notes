@@ -1,22 +1,21 @@
+import Colors from "@/assets/Colors";
 import { Stack } from "expo-router";
 import Toast, { BaseToast, ErrorToast } from "react-native-toast-message";
-import { View, Text } from "react-native";
-import Colors from "@/assets/Colors";
 
 const toastConfig = {
   success: (props: any) => (
     <BaseToast
       {...props}
-      style={{ borderLeftColor: Colors.grayDark, backgroundColor: Colors.grayLight }}
+      style={{ borderLeftColor: Colors.dark.grayDark, backgroundColor: Colors.dark.grayLight }}
       contentContainerStyle={{ paddingHorizontal: 15 }}
       text1Style={{
         fontSize: 16,
         fontWeight: "bold",
-        color: Colors.black,
+        color: Colors.dark.primary,
       }}
       text2Style={{
         fontSize: 14,
-        color: Colors.black,
+        color: Colors.dark.primary,
       }}
     />
   ),

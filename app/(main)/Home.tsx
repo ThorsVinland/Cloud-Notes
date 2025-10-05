@@ -1,33 +1,32 @@
 import Colors from '@/assets/Colors';
 import Search from '@/components/Search';
+import { auth, database, firestore } from '@/FirebaseConfig';
+import styles from '@/Styles/Home';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MasonryList from '@react-native-seoul/masonry-list';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { get, ref, onValue } from 'firebase/database';
+import { get, onValue, ref } from 'firebase/database';
 import {
     collection,
+    onSnapshot,
     orderBy,
     query,
     Timestamp,
     where,
-    onSnapshot,
 } from 'firebase/firestore';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+    ActivityIndicator,
+    BackHandler,
     Image,
+    Modal,
     Pressable,
     RefreshControl,
     StatusBar,
     Text,
     View,
-    Modal,
-    ActivityIndicator,
-    BackHandler,
 } from 'react-native';
-import { auth, database, firestore } from '@/FirebaseConfig';
-import styles from '@/Styles/Home';
-import MasonryList from '@react-native-seoul/masonry-list';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
 import Toast from 'react-native-toast-message';
 
 export default function Home() {
@@ -260,7 +259,7 @@ export default function Home() {
                     onRequestClose={() => { }}
                 >
                     <View style={styles.modalView}>
-                        <ActivityIndicator size={60} color={Colors.white} />
+                        <ActivityIndicator size={60} color={Colors.dark.white} />
                         <Text>Loading...</Text>
                     </View>
                 </Modal>
@@ -269,9 +268,7 @@ export default function Home() {
             <View
                 style={{
                     alignItems: 'center',
-                    borderTopColor: Colors.grayLight,
-                    borderTopWidth: 1,
-                    backgroundColor: Colors.black,
+                    backgroundColor: Colors.dark.primary,
                     height: 120,
                 }}
             >
@@ -279,7 +276,7 @@ export default function Home() {
                     style={({ pressed }) => [styles.addView, pressed && styles.addPress]}
                     onPress={() => router.push('/(main)/(note)/NoteDetail')}
                 >
-                    <Ionicons name="add-outline" size={70} color="black" />
+                    <Ionicons name="add-outline" size={65} color={Colors.dark.primary} />
                 </Pressable>
             </View>
         </>

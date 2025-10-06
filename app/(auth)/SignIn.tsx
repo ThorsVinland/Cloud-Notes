@@ -121,7 +121,7 @@ export default function SignIn() {
 
                     <TextInput
                         placeholder='Email'
-                        placeholderTextColor={Colors.dark.gray}
+                        placeholderTextColor={'gray'}
                         cursorColor={Colors.dark.primary}
                         autoCapitalize='none'
                         style={styles.textInout}
@@ -145,7 +145,7 @@ export default function SignIn() {
                         <TextInput
                             ref={passwordRef}
                             placeholder='Password'
-                            placeholderTextColor={Colors.dark.gray}
+                            placeholderTextColor={'gray'}
                             cursorColor={Colors.dark.primary}
                             autoCapitalize='none'
                             style={styles.textInout}

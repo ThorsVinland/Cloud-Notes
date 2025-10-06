@@ -44,7 +44,7 @@ export default StyleSheet.create({
         paddingLeft: 20,
         fontSize: 20,
         color: Colors.dark.primary,
-        fontWeight: '500',
+        fontWeight: '600',
     },
     forgotView: {
         width: '45%',

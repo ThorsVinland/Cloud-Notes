@@ -23,13 +23,14 @@ export default function Profile() {
     const router = useRouter();
     const { name } = useLocalSearchParams();
     const [userName, setUserName] = useState('');
+    const [userEmail, setUserEmail] = useState('');
     const [loadingOut, setLoadingOut] = useState(false);
     const [image, setImage] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
-    const [newName, setNewName] = useState('');
     const [bottomVisible, setBottomVisible] = useState(false);
+    const [newName, setNewName] = useState('');
 
     const openChangeNameModal = () => {
         setModalVisible(true);
@@ -145,7 +146,6 @@ export default function Profile() {
         }
     };
 
-
     useEffect(() => {
         if (auth.currentUser) {
             const nameRef = ref(database, 'users/' + auth.currentUser.uid + '/name');
@@ -158,44 +158,62 @@ export default function Profile() {
         }
     }, []);
 
+    useEffect(() => {
+        if (auth.currentUser) {
+            setUserEmail(auth.currentUser.email || '');
+        }
+    }, []);
+
 
     return (
         <View style={styles.container}>
-            <Pressable
-                style={styles.imageView}
-                onPress={handleImageOptions}
-            >
-                {uploading ? (
-                    <ActivityIndicator
-                        size={70}
-                        color={Colors.dark.primary}
-                    />
-                ) : (
-                    <Image
-                        source={image ? { uri: image } : require('../../assets/images/user.png')}
-                        style={styles.image}
-                    />
-                )}
-            </Pressable>
-            <View style={styles.nameView}>
-                <Text
-                    style={styles.name}
-                    numberOfLines={2}
-                >{userName || 'No name'}</Text>
+            <View style={styles.header}>
+                <Pressable
+                    style={styles.imageView}
+                    onPress={handleImageOptions}
+                >
+                    {uploading ? (
+                        <ActivityIndicator
+                            size={70}
+                            color={Colors.dark.primary}
+                        />
+                    ) : (
+                        <Image
+                            source={image ? { uri: image } : require('../../assets/images/user.png')}
+                            style={styles.image}
+                        />
+                    )}
+                </Pressable>
+            </View>
+            <View style={styles.name_email}>
                 <Pressable
                     style={({ pressed }) => [
-                        styles.editName,
-                        pressed && styles.editNamePress
+                        styles.nameView,
+                        pressed && { opacity: 0.7 }
                     ]}
                     onPress={openChangeNameModal}
                 >
-                    <Ionicons
-                        name='create-outline'
-                        size={30}
-                        color={Colors.dark.white}
-                    />
+                    <Text
+                        style={styles.name}
+                        numberOfLines={2}
+                    >{userName || 'No name'}</Text>
                 </Pressable>
             </View>
+
+            <View style={styles.name_email}>
+                <Pressable
+                    style={styles.nameView}
+                    onPress={() => router.push('/(settings)/Reauthenticate')}
+                >
+                    <View style={styles.nameView}>
+                        <Text
+                            style={styles.email}
+                            numberOfLines={1}
+                        >{userEmail || 'No email'}</Text>
+                    </View>
+                </Pressable>
+            </View>
+
             <Pressable
                 style={({ pressed }) => [
                     styles.logoutView,

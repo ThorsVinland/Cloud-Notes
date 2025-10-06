@@ -5,7 +5,20 @@ export default StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: Colors.dark.primary,
-        paddingHorizontal: 20,
+        // paddingHorizontal: 20,
+    },
+    header: {
+        justifyContent: 'center',
+        paddingVertical: 80,
+    },
+    name_email: {
+        backgroundColor: Colors.dark.grayDark,
+        height: 70,
+        paddingHorizontal: 10,
+        borderRadius: 10,
+        marginHorizontal: 10,
+        marginTop: 10,
+        justifyContent: 'center',
     },
     imageView: {
         height: 150,
@@ -13,7 +26,6 @@ export default StyleSheet.create({
         borderRadius: 75,
         backgroundColor: Colors.dark.white,
         alignSelf: 'center',
-        marginTop: 100,
         overflow: 'hidden',
         alignItems: 'center',
         justifyContent: 'center',
@@ -24,12 +36,17 @@ export default StyleSheet.create({
         resizeMode: 'cover',
     },
     nameView: {
-        marginTop: 25,
         alignItems: 'center',
         justifyContent: 'center',
     },
     name: {
         fontSize: 30,
+        fontWeight: 'bold',
+        color: Colors.dark.white,
+        marginHorizontal: 45,
+    },
+    email: {
+        fontSize: 20,
         fontWeight: 'bold',
         color: Colors.dark.white,
         marginHorizontal: 45,

@@ -1,6 +1,6 @@
 import Colors from "@/assets/Colors";
 import { auth, database } from "@/FirebaseConfig";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { sendEmailVerification } from "firebase/auth";
 import { ref, update } from "firebase/database";
 import React, { useState, useEffect } from "react";
@@ -17,6 +17,7 @@ export default function VerifyEmailPending() {
     const router = useRouter();
     const [resending, setResending] = useState(false);
     const [cooldown, setCooldown] = useState(0);
+    const padingEmail = useLocalSearchParams();
 
     const handleResendVerification = async () => {
         if (auth.currentUser && cooldown === 0) {
@@ -46,18 +47,12 @@ export default function VerifyEmailPending() {
 
     useEffect(() => {
         console.log("🔍 VerifyEmailPending mounted");
-        const unsubscribe = auth.onAuthStateChanged(async (user) => {
+        const unsubscribe = auth.onAuthStateChanged(user => {
             if (!user) {
                 console.log("🚨 User signed out or token expired");
                 router.replace("/(auth)/SignIn");
             } else {
-                console.log(
-                    "👤 User logged in:",
-                    user.email,
-                    "Initial emailVerified:",
-                    user.emailVerified
-                );
-                // لا نتحقق من emailVerified هنا، نترك التحقق للـ polling
+                console.log("✅ User still signed in:", user.email);
             }
         });
 
@@ -68,75 +63,67 @@ export default function VerifyEmailPending() {
     }, []);
 
     useEffect(() => {
-        console.log("🔄 Starting polling for email verification");
-        // تأخير أولي لضمان تحميل بيانات المستخدم
-        const initialDelay = setTimeout(() => {
-            if (auth.currentUser) {
-                auth.currentUser.reload().then(() => {
-                    console.log(
-                        "🔍 Initial check after delay: emailVerified =",
-                        auth.currentUser?.emailVerified
-                    );
-                    if (auth.currentUser?.emailVerified) {
-                        console.log("✅ Email verified on initial check, redirecting to Profile...");
-                        router.replace("/Profile");
-                    }
-                }).catch((err) => {
-                    console.log("⚠️ Error during initial reload:", err);
-                });
-            } else {
-                console.log("⚠️ No current user after initial delay");
-                router.replace("/(auth)/SignIn");
-            }
-        }, 2000); // تأخير 2 ثانية
+        let done = false;
 
         const interval = setInterval(async () => {
+            if (done) return;
+
             if (auth.currentUser) {
                 try {
                     await auth.currentUser.reload();
-                    console.log(
-                        "🔄 Polling: Reloaded user, emailVerified =",
-                        auth.currentUser.emailVerified
-                    );
+                    const newEmail = padingEmail?.newEmail;
 
-                    if (auth.currentUser.emailVerified) {
-                        console.log("✅ Email verified during polling, updating DB...");
+                    if (newEmail && auth.currentUser.email === newEmail) {
+                        done = true;
+                        console.log("✅ New Email is now set, updating DB...");
+
                         const userRef = ref(database, `users/${auth.currentUser.uid}`);
                         await update(userRef, { email: auth.currentUser.email });
+
                         clearInterval(interval);
-                        router.replace("/Profile");
+
+                        Toast.show({
+                            type: "success",
+                            text1: "Email updated successfully!",
+                            text2: "Please sign in again to refresh your session.",
+                        });
+
+
+                        await auth.signOut();
+
+                        setTimeout(() => {
+                            router.replace('/(auth)/SignIn');
+                        }, 2000);
+
                     } else {
-                        console.log("⏳ Email not verified yet, staying on VerifyEmailPending");
+                        console.log("⏳ New email not set yet, staying on VerifyEmailPending");
                     }
-                } catch (err) {
-                    console.log("⚠️ Error during polling:", err);
-                    Toast.show({
-                        type: "error",
-                        text1: "Error checking verification status",
-                        text2: "Please try again later.",
-                    });
+
+                } catch (error: any) {
+                    console.log("⚠️ Error during polling:", error);
                 }
             } else {
                 console.log("⚠️ No current user during polling");
                 clearInterval(interval);
                 router.replace("/(auth)/SignIn");
             }
-        }, 5000); // فاصل زمني 5 ثوانٍ
+        }, 5000);
 
         return () => {
             console.log("🧹 Cleaning up polling interval and initial delay");
-            clearTimeout(initialDelay);
             clearInterval(interval);
         };
-    }, []);
+
+    }, [padingEmail]);
 
     useEffect(() => {
         let timer: any;
         if (cooldown > 0) {
             timer = setInterval(() => {
-                setCooldown((prev) => prev - 1);
+                setCooldown((prev) => (prev > 0 ? prev - 1 : 0));
             }, 1000);
         }
+
         return () => clearInterval(timer);
     }, [cooldown]);
 

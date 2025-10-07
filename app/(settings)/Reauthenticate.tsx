@@ -38,7 +38,7 @@ export default function Reauthenticate() {
                     type: 'success',
                     text1: 'Verified!'
                 });
-                
+
                 router.replace({
                     pathname: '/ChangeEmail',
                     params: { verified: 'true' }

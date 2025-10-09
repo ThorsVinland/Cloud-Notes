@@ -22,15 +22,18 @@ export default StyleSheet.create({
         color: Colors.dark.white,
     },
     header: {
-        height: 140,
+        marginTop: 30,
+        height: 100,
         alignItems: 'center',
         paddingHorizontal: 20,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginHorizontal: 10,
+        borderBottomColor: Colors.dark.white,
+        borderBottomWidth: 1,
     },
     body: {
         padding: 20,
+        marginTop: 50,
     },
     bottomBar: {
         height: 100,
@@ -58,5 +61,16 @@ export default StyleSheet.create({
     },
     copyPress: {
         opacity: 0.6,
+    },
+    modalBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+    },
+    modalText: {
+        color: Colors.dark.white,
+        fontSize: 16,
     },
 });

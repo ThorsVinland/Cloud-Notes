@@ -11,7 +11,7 @@ export default StyleSheet.create({
     },
     header: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
         alignItems: 'center',
         marginTop: Platform.OS === "android" ?
             (StatusBar.currentHeight ?? 0) + 10
@@ -20,10 +20,10 @@ export default StyleSheet.create({
         paddingHorizontal: 10,
     },
     headerText: {
-        color: Colors.dark.white,
+        color: Colors.dark.text,
         fontSize: 30,
         fontWeight: 'bold',
-        marginLeft: 10,
+        marginLeft: 20,
     },
     profile: {
         width: 50,
@@ -43,7 +43,7 @@ export default StyleSheet.create({
         resizeMode: 'cover',
     },
     addView: {
-        backgroundColor: Colors.dark.grayDark,
+        backgroundColor: '#1a212f',
         width: 70,
         height: 70,
         borderRadius: 100,
@@ -72,12 +72,12 @@ export default StyleSheet.create({
     noteTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: Colors.dark.white,
+        color: Colors.dark.text,
         marginBottom: 5,
     },
     noteText: {
         fontSize: 14,
-        color: Colors.dark.gray,
+        color: Colors.dark.textL,
     },
     modalView: {
         flex: 1,

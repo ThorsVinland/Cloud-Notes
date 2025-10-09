@@ -2,6 +2,7 @@ import { auth, database } from '@/FirebaseConfig';
 import Colors from '@/assets/Colors';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
+import * as Clipboard from 'expo-clipboard';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { signOut } from 'firebase/auth';
 import { onValue, ref, set } from 'firebase/database';
@@ -19,7 +20,6 @@ import Toast from 'react-native-toast-message';
 import styles from '../../Styles/Profile';
 
 export default function Profile() {
-
     const router = useRouter();
     const { name } = useLocalSearchParams();
     const [userName, setUserName] = useState('');
@@ -27,7 +27,6 @@ export default function Profile() {
     const [loadingOut, setLoadingOut] = useState(false);
     const [image, setImage] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
-    const [refreshing, setRefreshing] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [bottomVisible, setBottomVisible] = useState(false);
     const [newName, setNewName] = useState('');
@@ -57,6 +56,14 @@ export default function Profile() {
                 });
             }
         }
+    };
+
+    const handleCopyEmail = async () => {
+        await Clipboard.setStringAsync(userEmail);
+        Toast.show({
+            type: "success",
+            text1: "Email copied to clipboard!",
+        });
     };
 
     const handleLogout = async () => {
@@ -97,7 +104,6 @@ export default function Profile() {
                     setImage(snapshot.val());
                 }
             });
-
             return () => unsubscribe();
         }
     }, []);
@@ -105,7 +111,6 @@ export default function Profile() {
     const uploadImage = async (uri: string) => {
         try {
             setUploading(true);
-
             const data = new FormData();
             data.append('file', {
                 uri,
@@ -132,15 +137,12 @@ export default function Profile() {
                 type: "success",
                 text1: "Image uploaded successfully!",
             });
-
         } catch (error: any) {
             console.log('Upload error: ', error);
-
             Toast.show({
                 type: "error",
                 text1: "Failed to upload image.",
             });
-
         } finally {
             setUploading(false);
         }
@@ -164,7 +166,6 @@ export default function Profile() {
         }
     }, []);
 
-
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -185,33 +186,48 @@ export default function Profile() {
                     )}
                 </Pressable>
             </View>
-            <View style={styles.name_email}>
-                <Pressable
-                    style={({ pressed }) => [
-                        styles.nameView,
-                        pressed && { opacity: 0.7 }
-                    ]}
-                    onPress={openChangeNameModal}
-                >
-                    <Text
-                        style={styles.name}
-                        numberOfLines={2}
-                    >{userName || 'No name'}</Text>
-                </Pressable>
-            </View>
 
-            <View style={styles.name_email}>
-                <Pressable
-                    style={styles.nameView}
-                    onPress={() => router.push('/(settings)/Reauthenticate')}
-                >
-                    <View style={styles.nameView}>
-                        <Text
-                            style={styles.email}
-                            numberOfLines={1}
-                        >{userEmail || 'No email'}</Text>
+
+            <View style={styles.card}>
+                <View style={styles.cardContent}>
+                    
+                    <View style={styles.row}>
+                        <Text style={styles.name}>{userName || 'No name'}</Text>
+                        <Pressable
+                            style={({ pressed }) => [
+                                styles.iconButton,
+                                pressed && { opacity: 0.7 }
+                            ]}
+                            onPress={openChangeNameModal}
+                        >
+                            <Ionicons name="pencil" size={24} color={Colors.dark.white} />
+                        </Pressable>
                     </View>
-                </Pressable>
+
+                    <View style={styles.row}>
+                        <Text style={styles.email}>{userEmail || 'No email'}</Text>
+                        <View style={styles.buttonGroup}>
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.iconButton,
+                                    pressed && { opacity: 0.7 }
+                                ]}
+                                onPress={() => router.push('/(settings)/Reauthenticate')}
+                            >
+                                <Ionicons name="pencil" size={24} color={Colors.dark.white} />
+                            </Pressable>
+                            <Pressable
+                                style={({ pressed }) => [
+                                    styles.iconButton,
+                                    pressed && { opacity: 0.7 }
+                                ]}
+                                onPress={handleCopyEmail}
+                            >
+                                <Ionicons name="copy" size={24} color={Colors.dark.white} />
+                            </Pressable>
+                        </View>
+                    </View>
+                </View>
             </View>
 
             <Pressable
@@ -230,6 +246,7 @@ export default function Profile() {
                     <Text style={styles.logoutText}>Log out</Text>
                 )}
             </Pressable>
+
             <Modal
                 animationType='slide'
                 transparent={true}
@@ -253,7 +270,6 @@ export default function Profile() {
                                 value={newName}
                                 onChangeText={setNewName}
                                 style={styles.ModalTextInput}
-
                             />
                             <Pressable
                                 style={({ pressed }) => [
@@ -292,6 +308,7 @@ export default function Profile() {
                     </View>
                 </View>
             </Modal>
+
             <Modal
                 visible={bottomVisible}
                 transparent
@@ -352,5 +369,5 @@ export default function Profile() {
                 </Pressable>
             </Modal>
         </View>
-    )
+    );
 }

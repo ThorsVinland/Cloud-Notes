@@ -183,7 +183,6 @@ export default function Home() {
             <StatusBar hidden />
             <View style={styles.container}>
                 <View style={styles.header}>
-                    <Text style={styles.headerText}>{name}</Text>
                     <Pressable
                         style={({ pressed }) => [
                             styles.profile,
@@ -205,6 +204,10 @@ export default function Home() {
                             style={styles.profileImage}
                         />
                     </Pressable>
+                    <Text
+                        style={styles.headerText}
+                        numberOfLines={1}
+                    >{name}</Text>
                 </View>
 
                 <Search value={searchQuery} onChangeText={handleSearch} />
@@ -276,7 +279,7 @@ export default function Home() {
                     style={({ pressed }) => [styles.addView, pressed && styles.addPress]}
                     onPress={() => router.push('/(main)/(note)/NoteDetail')}
                 >
-                    <Ionicons name="add-outline" size={65} color={Colors.dark.primary} />
+                    <Ionicons name="add-outline" size={65} color={'#4372ff'} />
                 </Pressable>
             </View>
         </>

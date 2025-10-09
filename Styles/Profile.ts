@@ -5,20 +5,45 @@ export default StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: Colors.dark.primary,
-        // paddingHorizontal: 20,
+        paddingHorizontal: 20,
     },
     header: {
         justifyContent: 'center',
         paddingVertical: 80,
     },
-    name_email: {
+    card: {
         backgroundColor: Colors.dark.grayDark,
-        height: 70,
-        paddingHorizontal: 10,
         borderRadius: 10,
-        marginHorizontal: 10,
-        marginTop: 10,
-        justifyContent: 'center',
+        marginVertical: 10,
+        padding: 15,
+    },
+    cardContent: {
+        flexDirection: 'column',
+        gap: 15,
+    },
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    name: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: Colors.dark.white,
+        flex: 1,
+    },
+    email: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: Colors.dark.white,
+        flex: 1,
+    },
+    iconButton: {
+        padding: 10,
+    },
+    buttonGroup: {
+        flexDirection: 'row',
+        gap: 10,
     },
     imageView: {
         height: 150,
@@ -35,29 +60,6 @@ export default StyleSheet.create({
         height: '100%',
         resizeMode: 'cover',
     },
-    nameView: {
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    name: {
-        fontSize: 30,
-        fontWeight: 'bold',
-        color: Colors.dark.white,
-        marginHorizontal: 45,
-    },
-    email: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: Colors.dark.white,
-        marginHorizontal: 45,
-    },
-    editName: {
-        position: 'absolute',
-        right: 15,
-    },
-    editNamePress: {
-        opacity: 0.6,
-    },
     logoutView: {
         backgroundColor: 'red',
         paddingVertical: 10,
@@ -66,12 +68,11 @@ export default StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 10,
-        bottom: 60,
-        left: 20,
-        position: 'absolute',
+        alignSelf: 'center',
+        marginTop: 10,
     },
     logoutPress: {
-        transform: [{ scale: 0.96 }]
+        transform: [{ scale: 0.96 }],
     },
     logoutText: {
         color: Colors.dark.white,
@@ -82,13 +83,6 @@ export default StyleSheet.create({
         flex: 1,
         paddingHorizontal: 20,
         backgroundColor: 'rgba(0, 0, 0, 0.94)',
-    },
-    ModalNameView: {
-        width: '80%',
-        backgroundColor: 'white',
-        borderRadius: 10,
-        padding: 20,
-        alignItems: 'center'
     },
     ModalTextInput: {
         borderWidth: 1,

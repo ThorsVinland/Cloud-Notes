@@ -1,22 +1,21 @@
 import {
     View,
-    Text,
     TextInput,
     Pressable,
-    Alert,
     ActivityIndicator,
     Modal,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styles from '@/Styles/NoteDetail';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Colors from '@/assets/Colors';
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { auth, firestore } from '@/FirebaseConfig';
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import CustomAlert from '@/components/CustomAlert';
+import Toast from 'react-native-toast-message';
 
-export default function noteDetail() {
-
+export default function NoteDetail() {
     const router = useRouter();
     const { id, title: oldTitle, note: oldNote } = useLocalSearchParams<{
         id?: string;
@@ -27,21 +26,24 @@ export default function noteDetail() {
     const [title, setTitle] = useState(oldTitle || '');
     const [note, setNote] = useState(oldNote || '');
     const [loading, setLoading] = useState(false);
+    const [alertVisible, setAlertVisible] = useState(false);
 
     const saveNote = async () => {
         if (!title.trim() || !note.trim()) {
-            Alert.alert(
-                'Error',
-                'Pleas enter both title and note.'
-            );
+            Toast.show({
+                type: 'error',
+                text1: 'Missing fields',
+                text2: 'Please enter both title and note before saving.',
+            });
             return;
         }
 
         if (!auth.currentUser) {
-            Alert.alert(
-                'Error',
-                'You must be logged in'
-            );
+            Toast.show({
+                type: 'error',
+                text1: 'Not logged in',
+                text2: 'You must be logged in to save notes.',
+            });
             return;
         }
 
@@ -53,45 +55,43 @@ export default function noteDetail() {
                 await updateDoc(noteRef, {
                     title,
                     note,
-                    updateAt: serverTimestamp(),
+                    updatedAt: serverTimestamp(),
                 });
-            }
-            else {
+                Toast.show({
+                    type: 'success',
+                    text1: 'Note updated',
+                    text2: 'Your note has been updated successfully.',
+                });
+            } else {
                 await addDoc(collection(firestore, 'notes'), {
                     uid: auth.currentUser.uid,
                     title,
                     note,
                     createdAt: new Date(),
                 });
+                Toast.show({
+                    type: 'success',
+                    text1: 'Note saved',
+                    text2: 'Your note has been added successfully.',
+                });
             }
+
             router.replace('/(main)/Home');
             router.dismissAll();
         } catch (error: any) {
-            console.error("Error adding note: ", error);
-            Alert.alert(
-                "Error",
-                "Could not save note."
-            );
+            console.error("Error saving note: ", error);
+            Toast.show({
+                type: 'error',
+                text1: 'Save failed',
+                text2: 'Something went wrong while saving your note.',
+            });
         } finally {
             setLoading(false);
         }
     };
 
     const closePage = () => {
-        Alert.alert(
-            'Close page',
-            'You want to close this page?',
-            [
-                {
-                    text: 'Close',
-                    onPress: () => router.back(),
-                },
-                {
-                    text: 'Cancel',
-                },
-            ],
-            { cancelable: true }
-        );
+        router.back();
     };
 
     return (
@@ -100,27 +100,29 @@ export default function noteDetail() {
                 <TextInput
                     placeholder='Title'
                     placeholderTextColor={Colors.dark.gray}
-                    style={[styles.textInput, { fontWeight: '900', height: 60, }]}
+                    style={[styles.textInput, { fontWeight: '900', height: 60 }]}
                     value={title}
                     onChangeText={setTitle}
                 />
                 <TextInput
                     placeholder='Note'
                     placeholderTextColor={Colors.dark.gray}
-                    style={[styles.textInput, {
-                        fontWeight: '600',
-                        height: 300,
-                        textAlign: 'left',
-                        textAlignVertical: 'top',
-                    }]}
+                    style={[
+                        styles.textInput,
+                        {
+                            fontWeight: '600',
+                            height: 300,
+                            textAlign: 'left',
+                            textAlignVertical: 'top',
+                        },
+                    ]}
                     value={note}
                     onChangeText={setNote}
                     multiline
                 />
+
                 <View style={styles.btnView}>
-                    <Pressable
-                        onPress={saveNote}
-                    >
+                    <Pressable onPress={saveNote}>
                         {({ pressed }) => (
                             <Ionicons
                                 name='checkmark-circle'
@@ -130,9 +132,8 @@ export default function noteDetail() {
                             />
                         )}
                     </Pressable>
-                    <Pressable
-                        onPress={closePage}
-                    >
+
+                    <Pressable onPress={() => setAlertVisible(true)}>
                         {({ pressed }) => (
                             <Ionicons
                                 name='close-circle'
@@ -144,24 +145,36 @@ export default function noteDetail() {
                     </Pressable>
                 </View>
             </View>
+
             <Modal
-                transparent={true}
+                transparent
                 animationType='fade'
                 visible={loading}
                 onRequestClose={() => { }}
             >
-                <View style={{
-                    flex: 1,
-                    backgroundColor: 'rgba(0,0,0,0.4)',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}>
-                    <ActivityIndicator
-                        size={60}
-                        color={Colors.dark.white}
-                    />
+                <View
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0,0,0,0.4)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                >
+                    <ActivityIndicator size={60} color={Colors.dark.white} />
                 </View>
             </Modal>
+
+            <CustomAlert
+                visible={alertVisible}
+                title='Discard changes?'
+                message='Are you sure you want to go back without saving your changes?'
+                confirmText='Discard'
+                onClose={() => setAlertVisible(false)}
+                onConfirm={() => {
+                    setAlertVisible(false);
+                    closePage();
+                }}
+            />
         </View>
-    )
+    );
 }

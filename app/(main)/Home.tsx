@@ -222,7 +222,7 @@ export default function Home() {
                         keyExtractor={(item) => (item as Note).id}
                         numColumns={2}
                         showsVerticalScrollIndicator={false}
-                        style={{ gap: 10 }}
+                        style={{ gap: 10, }}
                         refreshControl={
                             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} /> as any
                         }

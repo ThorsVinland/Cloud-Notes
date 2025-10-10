@@ -18,10 +18,10 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import styles from '../../Styles/Profile';
+import CustomAlert from '@/components/CustomAlert';
 
 export default function Profile() {
     const router = useRouter();
-    const { name } = useLocalSearchParams();
     const [userName, setUserName] = useState('');
     const [userEmail, setUserEmail] = useState('');
     const [loadingOut, setLoadingOut] = useState(false);
@@ -30,6 +30,7 @@ export default function Profile() {
     const [modalVisible, setModalVisible] = useState(false);
     const [bottomVisible, setBottomVisible] = useState(false);
     const [newName, setNewName] = useState('');
+    const [alertVisible, setAlertVisible] = useState(false);
 
     const openChangeNameModal = () => {
         setModalVisible(true);
@@ -46,15 +47,23 @@ export default function Profile() {
                 setNewName('');
                 Toast.show({
                     type: "success",
-                    text1: "Name updated successfully!",
+                    text1: "Name updated",
+                    text2: "Your name has been updated successfully.",
                 });
             } catch (error: any) {
                 console.log('Error updating name: ', error);
                 Toast.show({
                     type: "error",
-                    text1: "Failed to update name.",
+                    text1: "Update failed",
+                    text2: "Could not update your name. Please try again.",
                 });
             }
+        } else {
+            Toast.show({
+                type: "info",
+                text1: "Empty field",
+                text2: "Please enter a valid name before saving.",
+            });
         }
     };
 
@@ -62,7 +71,8 @@ export default function Profile() {
         await Clipboard.setStringAsync(userEmail);
         Toast.show({
             type: "success",
-            text1: "Email copied to clipboard!",
+            text1: "Copied",
+            text2: "Email address copied to clipboard.",
         });
     };
 
@@ -70,11 +80,21 @@ export default function Profile() {
         try {
             setLoadingOut(true);
             await signOut(auth);
-            console.log('Log out');
+            console.log('Logged out');
             router.replace('/SignIn');
+            Toast.show({
+                type: "success",
+                text1: "Logged out",
+                text2: "You have been signed out successfully.",
+            });
         } catch (error: any) {
-            console.log('Error');
+            console.log('Logout error', error);
             setLoadingOut(false);
+            Toast.show({
+                type: "error",
+                text1: "Logout failed",
+                text2: "Something went wrong. Please try again.",
+            });
         }
     };
 
@@ -135,13 +155,15 @@ export default function Profile() {
 
             Toast.show({
                 type: "success",
-                text1: "Image uploaded successfully!",
+                text1: "Image uploaded",
+                text2: "Your profile image has been updated successfully.",
             });
         } catch (error: any) {
             console.log('Upload error: ', error);
             Toast.show({
                 type: "error",
-                text1: "Failed to upload image.",
+                text1: "Upload failed",
+                text2: "Could not upload image. Please try again.",
             });
         } finally {
             setUploading(false);
@@ -174,10 +196,7 @@ export default function Profile() {
                     onPress={handleImageOptions}
                 >
                     {uploading ? (
-                        <ActivityIndicator
-                            size={70}
-                            color={Colors.dark.primary}
-                        />
+                        <ActivityIndicator size={70} color={Colors.dark.primary} />
                     ) : (
                         <Image
                             source={image ? { uri: image } : require('../../assets/images/user.png')}
@@ -187,12 +206,11 @@ export default function Profile() {
                 </Pressable>
             </View>
 
-
             <View style={styles.card}>
                 <View style={styles.cardContent}>
-                    
+
                     <View style={styles.row}>
-                        <Text style={styles.name}>{userName || 'No name'}</Text>
+                        <Text style={styles.name}>{userName || 'No name set'}</Text>
                         <Pressable
                             style={({ pressed }) => [
                                 styles.iconButton,
@@ -205,7 +223,7 @@ export default function Profile() {
                     </View>
 
                     <View style={styles.row}>
-                        <Text style={styles.email}>{userEmail || 'No email'}</Text>
+                        <Text style={styles.email}>{userEmail || 'No email found'}</Text>
                         <View style={styles.buttonGroup}>
                             <Pressable
                                 style={({ pressed }) => [
@@ -235,21 +253,18 @@ export default function Profile() {
                     styles.logoutView,
                     pressed && styles.logoutPress
                 ]}
-                onPress={handleLogout}
+                onPress={() => setAlertVisible(true)}
             >
                 {loadingOut ? (
-                    <ActivityIndicator
-                        size={'large'}
-                        color={Colors.dark.white}
-                    />
+                    <ActivityIndicator size={'large'} color={Colors.dark.white} />
                 ) : (
-                    <Text style={styles.logoutText}>Log out</Text>
+                    <Text style={styles.logoutText}>Sign out</Text>
                 )}
             </Pressable>
 
             <Modal
                 animationType='slide'
-                transparent={true}
+                transparent
                 visible={modalVisible}
                 onRequestClose={() => setModalVisible(false)}
             >
@@ -262,7 +277,9 @@ export default function Profile() {
                                 color: Colors.dark.white,
                                 marginTop: 250,
                             }}
-                        >Enter your name</Text>
+                        >
+                            Enter your new name
+                        </Text>
                         <View style={{ justifyContent: 'center' }}>
                             <TextInput
                                 placeholder='New name'
@@ -331,11 +348,8 @@ export default function Profile() {
                             borderTopRightRadius: 20,
                         }}
                     >
-                        <Pressable
-                            onPress={pickImage}
-                            style={{ padding: 15 }}
-                        >
-                            <Text style={{ fontSize: 18 }}>Change Image</Text>
+                        <Pressable onPress={pickImage} style={{ padding: 15 }}>
+                            <Text style={{ fontSize: 18 }}>Change profile image</Text>
                         </Pressable>
                         <Pressable
                             onPress={async () => {
@@ -344,30 +358,37 @@ export default function Profile() {
                                     setImage(null);
                                     Toast.show({
                                         type: "success",
-                                        text1: "Profile image removed!",
+                                        text1: "Image removed",
+                                        text2: "Your profile image has been deleted.",
                                     });
                                 }
                                 setBottomVisible(false);
                             }}
                             style={{ padding: 15 }}
                         >
-                            <Text style={{
-                                fontSize: 18,
-                                color: 'red',
-                            }}>Remove Image</Text>
+                            <Text style={{ fontSize: 18, color: 'red' }}>Remove image</Text>
                         </Pressable>
                         <Pressable
                             onPress={() => setBottomVisible(false)}
                             style={{ padding: 15 }}
                         >
-                            <Text style={{
-                                fontSize: 18,
-                                color: "gray",
-                            }}>Cancel</Text>
+                            <Text style={{ fontSize: 18, color: "gray" }}>Cancel</Text>
                         </Pressable>
                     </View>
                 </Pressable>
             </Modal>
+
+            <CustomAlert
+                visible={alertVisible}
+                title='Sign out'
+                message='Are you sure you want to sign out of your account?'
+                confirmText='Sign out'
+                onClose={() => setAlertVisible(false)}
+                onConfirm={() => {
+                    setAlertVisible(false);
+                    handleLogout();
+                }}
+            />
         </View>
     );
 }

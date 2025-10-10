@@ -8,7 +8,6 @@ import {
     Text,
     View,
     Pressable,
-    Alert,
     Share,
     Modal,
 } from 'react-native';
@@ -17,6 +16,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import Toast from 'react-native-toast-message';
 import { firestore } from '@/FirebaseConfig';
 import { doc, deleteDoc } from 'firebase/firestore';
+import CustomAlert from '@/components/CustomAlert';
 
 export default function Note() {
     const router = useRouter();
@@ -28,42 +28,40 @@ export default function Note() {
 
     const [loading, setLoading] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
+    const [alertVisible, setAlertVisible] = useState(false);
 
     const handleCopy = async () => {
         await Clipboard.setStringAsync(String(note));
         Toast.show({
             type: 'success',
-            text1: 'Copied!',
-            text2: 'Note has been copied',
+            text1: 'Note copied',
+            text2: 'The note content has been copied to your clipboard.',
         });
         setModalVisible(false);
     };
 
     const handleDelete = async () => {
         if (!id) return;
-        Alert.alert('Delete Note', 'Are you sure you want to delete this note?', [
-            {
-                text: 'Delete',
-                onPress: async () => {
-                    try {
-                        setLoading(true);
-                        await deleteDoc(doc(firestore, 'notes', id));
-                        router.back();
-                    } catch (error: any) {
-                        setLoading(false);
-                        Toast.show({
-                            type: 'error',
-                            text1: 'Error',
-                            text2: 'Failed to delete note',
-                        });
-                        console.log('Error: ', error);
-                    }
-                },
-                style: 'destructive',
-            },
-            { text: 'Cancel' },
-        ]);
-        setModalVisible(false);
+        try {
+            setLoading(true);
+            await deleteDoc(doc(firestore, 'notes', id));
+            Toast.show({
+                type: 'success',
+                text1: 'Note deleted',
+                text2: 'The note has been successfully deleted.',
+            });
+            router.back();
+        } catch (error: any) {
+            Toast.show({
+                type: 'error',
+                text1: 'Delete failed',
+                text2: 'Something went wrong while deleting the note.',
+            });
+            console.log('Error deleting note:', error);
+        } finally {
+            setLoading(false);
+            setModalVisible(false);
+        }
     };
 
     const handleShare = async () => {
@@ -72,7 +70,12 @@ export default function Note() {
                 message: `${title}\n\n${note}`,
             });
         } catch (error: any) {
-            console.log('Error sharing: ', error);
+            Toast.show({
+                type: 'error',
+                text1: 'Share failed',
+                text2: 'Unable to share this note.',
+            });
+            console.log('Error sharing:', error);
         }
         setModalVisible(false);
     };
@@ -111,6 +114,7 @@ export default function Note() {
                                     />
                                 </Pressable>
                             </View>
+
                             <View style={styles.body}>
                                 <ScrollView>
                                     <Text style={styles.note}>{note}</Text>
@@ -118,20 +122,18 @@ export default function Note() {
                             </View>
                         </>
                     ) : (
-                        <Text>Error</Text>
+                        <Text style={{ color: Colors.dark.text }}>Error loading note</Text>
                     )}
                 </View>
             )}
+
             <Modal
                 transparent
                 animationType="fade"
                 visible={modalVisible}
                 onRequestClose={() => setModalVisible(false)}
             >
-                <Pressable
-                    style={{ flex: 1 }}
-                    onPressOut={() => setModalVisible(false)}
-                >
+                <Pressable style={{ flex: 1 }} onPressOut={() => setModalVisible(false)}>
                     <View
                         style={{
                             position: 'absolute',
@@ -147,21 +149,42 @@ export default function Note() {
                             <Ionicons name="copy-outline" size={22} color={Colors.dark.white} />
                             <Text style={styles.modalText}>Copy</Text>
                         </Pressable>
+
                         <Pressable style={styles.modalBtn} onPress={handleShare}>
                             <Ionicons name="share-social-outline" size={22} color={Colors.dark.white} />
                             <Text style={styles.modalText}>Share</Text>
                         </Pressable>
+
                         <Pressable style={styles.modalBtn} onPress={handleEdit}>
                             <Ionicons name="create-outline" size={22} color={Colors.dark.white} />
                             <Text style={styles.modalText}>Edit</Text>
                         </Pressable>
-                        <Pressable style={styles.modalBtn} onPress={handleDelete}>
+
+                        <Pressable
+                            style={styles.modalBtn}
+                            onPress={() => {
+                                setModalVisible(false);
+                                setAlertVisible(true);
+                            }}
+                        >
                             <Ionicons name="trash-outline" size={22} color="red" />
                             <Text style={[styles.modalText, { color: 'red' }]}>Delete</Text>
                         </Pressable>
                     </View>
                 </Pressable>
             </Modal>
+
+            <CustomAlert
+                visible={alertVisible}
+                title="Delete note"
+                message="Are you sure you want to delete this note? This action cannot be undone."
+                confirmText="Delete"
+                onClose={() => setAlertVisible(false)}
+                onConfirm={() => {
+                    setAlertVisible(false);
+                    handleDelete();
+                }}
+            />
         </View>
     );
 }

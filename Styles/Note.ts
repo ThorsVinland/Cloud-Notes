@@ -4,7 +4,9 @@ import { StyleSheet } from "react-native";
 export default StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.dark.primary,
+        backgroundColor: '#0a0d14ff',
+        // backgroundColor: '#2b2b2bff',
+        // backgroundColor: Colors.dark.primary,
     },
     indicatorContainer: {
         flex: 1,
@@ -17,7 +19,7 @@ export default StyleSheet.create({
         color: Colors.dark.white,
     },
     note: {
-        fontSize: 25,
+        fontSize: 17,
         fontWeight: '600',
         color: Colors.dark.white,
     },
@@ -32,7 +34,7 @@ export default StyleSheet.create({
         borderBottomWidth: 1,
     },
     body: {
-        padding: 20,
+        paddingHorizontal: 20,
         marginTop: 50,
     },
     bottomBar: {

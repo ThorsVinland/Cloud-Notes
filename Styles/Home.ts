@@ -46,11 +46,12 @@ export default StyleSheet.create({
         backgroundColor: '#1a212f',
         width: 70,
         height: 70,
-        borderRadius: 100,
+        borderRadius: 35,
         alignItems: 'center',
         justifyContent: 'center',
-        overflow: 'hidden',
-        marginTop: 10,
+        position: 'absolute',
+        bottom: 20,
+        alignSelf: 'center',
     },
     addPress: {
         transform: [{ scale: 0.95 }]

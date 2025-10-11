@@ -222,7 +222,7 @@ export default function Home() {
                         keyExtractor={(item) => (item as Note).id}
                         numColumns={2}
                         showsVerticalScrollIndicator={false}
-                        style={{ gap: 10, }}
+                        style={{ gap: 10, marginBottom: 100, }}
                         refreshControl={
                             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} /> as any
                         }
@@ -268,20 +268,12 @@ export default function Home() {
                 </Modal>
             </View>
 
-            <View
-                style={{
-                    alignItems: 'center',
-                    backgroundColor: Colors.dark.primary,
-                    height: 120,
-                }}
+            <Pressable
+                style={({ pressed }) => [styles.addView, pressed && styles.addPress]}
+                onPress={() => router.push('/(main)/(note)/NoteDetail')}
             >
-                <Pressable
-                    style={({ pressed }) => [styles.addView, pressed && styles.addPress]}
-                    onPress={() => router.push('/(main)/(note)/NoteDetail')}
-                >
-                    <Ionicons name="add-outline" size={65} color={'#4372ff'} />
-                </Pressable>
-            </View>
+                <Ionicons name="add-outline" size={65} color={'#4372ff'} />
+            </Pressable>
         </>
     );
 }

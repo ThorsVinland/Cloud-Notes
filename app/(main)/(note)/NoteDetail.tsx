@@ -4,8 +4,9 @@ import {
     Pressable,
     ActivityIndicator,
     Modal,
+    BackHandler,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '@/Styles/NoteDetail';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Colors from '@/assets/Colors';
@@ -28,6 +29,17 @@ export default function NoteDetail() {
     const [loading, setLoading] = useState(false);
     const [alertVisible, setAlertVisible] = useState(false);
 
+    const isEditing = Boolean(id);
+    const alertTitle = isEditing ? 'Discard edits?' : 'Discard new note?';
+    const alertMessage = isEditing
+        ? 'Are you sure you want to discard your changes?'
+        : 'Are you sure you want to discard this new note?';
+
+    const getDirection = (text: string) => {
+        const arabicRegex = /[\u0600-\u06FF]/;
+        return arabicRegex.test(text) ? 'rtl' : 'ltr';
+    };
+    
     const saveNote = async () => {
         if (!title.trim() || !note.trim()) {
             Toast.show({
@@ -94,13 +106,30 @@ export default function NoteDetail() {
         router.back();
     };
 
+    useEffect(() => {
+        const backAction = () => {
+            setAlertVisible(true);
+            return true;
+        };
+
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+        return () => backHandler.remove();
+    }, []);
+
     return (
         <View style={styles.container}>
             <View style={styles.textInputView}>
                 <TextInput
                     placeholder='Title'
                     placeholderTextColor={Colors.dark.gray}
-                    style={[styles.textInput, { fontWeight: '900', height: 60 }]}
+                    style={[
+                        styles.textInput,
+                        {
+                            fontWeight: '900',
+                            height: 60,
+                            textAlign: getDirection(title) === 'rtl' ? 'right' : 'left',
+                            writingDirection: getDirection(title),
+                        }]}
                     value={title}
                     onChangeText={setTitle}
                 />
@@ -112,8 +141,9 @@ export default function NoteDetail() {
                         {
                             fontWeight: '600',
                             height: 300,
-                            textAlign: 'left',
                             textAlignVertical: 'top',
+                            textAlign: getDirection(note) === 'rtl' ? 'right' : 'left',
+                            writingDirection: getDirection(note),
                         },
                     ]}
                     value={note}
@@ -166,8 +196,8 @@ export default function NoteDetail() {
 
             <CustomAlert
                 visible={alertVisible}
-                title='Discard changes?'
-                message='Are you sure you want to go back without saving your changes?'
+                title={alertTitle}
+                message={alertMessage}
                 confirmText='Discard'
                 onClose={() => setAlertVisible(false)}
                 onConfirm={() => {

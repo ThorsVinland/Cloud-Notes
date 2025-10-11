@@ -18,6 +18,11 @@ import { firestore } from '@/FirebaseConfig';
 import { doc, deleteDoc } from 'firebase/firestore';
 import CustomAlert from '@/components/CustomAlert';
 
+const getDirection = (text: string) => {
+    const arabicRegex = /[\u0600-\u06FF]/;
+    return arabicRegex.test(text) ? 'rtl' : 'ltr';
+};
+
 export default function Note() {
     const router = useRouter();
     const { id, title, note } = useLocalSearchParams<{
@@ -99,7 +104,9 @@ export default function Note() {
                     {title && note ? (
                         <>
                             <View style={styles.header}>
-                                <Text style={styles.title}>{title}</Text>
+                                <Text
+                                    style={styles.title}
+                                >{title}</Text>
                                 <Pressable
                                     onPress={() => setModalVisible(true)}
                                     style={({ pressed }) => [
@@ -117,7 +124,15 @@ export default function Note() {
 
                             <View style={styles.body}>
                                 <ScrollView>
-                                    <Text style={styles.note}>{note}</Text>
+                                    <Text
+                                        style={[
+                                            styles.note,
+                                            {
+                                                textAlign: getDirection(String(note)) === 'rtl' ? 'right' : 'left',
+                                                writingDirection: getDirection(String(note)),
+                                            }
+                                        ]}
+                                    >{note}</Text>
                                 </ScrollView>
                             </View>
                         </>

@@ -124,15 +124,23 @@ export default function Note() {
 
                             <View style={styles.body}>
                                 <ScrollView>
-                                    <Text
-                                        style={[
-                                            styles.note,
-                                            {
-                                                textAlign: getDirection(String(note)) === 'rtl' ? 'right' : 'left',
-                                                writingDirection: getDirection(String(note)),
-                                            }
-                                        ]}
-                                    >{note}</Text>
+                                    {String(note)
+                                        .split('\n')
+                                        .map((line, index) => (
+                                            <Text
+                                                key={index}
+                                                style={[
+                                                    styles.note,
+                                                    {
+                                                        textAlign: /[\u0600-\u06FF]/.test(line) ? 'right' : 'left',
+                                                        writingDirection: /[\u0600-\u06FF]/.test(line) ? 'rtl' : 'ltr',
+                                                    },
+                                                ]}
+                                            >
+                                                {line || ' '}
+                                            </Text>
+                                        ))}
+
                                 </ScrollView>
                             </View>
                         </>

@@ -48,6 +48,47 @@ export default function Home() {
     const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
     const backPressCount = useRef(0);
 
+    const ARABIC_REGEX = /^[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/;
+    function isLineArabic(line: string) {
+        const trimmed = line.trim();
+        return ARABIC_REGEX.test(trimmed);
+    }
+
+    function renderTextByLine(text: string, maxLines = 5, textStyle?: any) {
+        if (!text) return null;
+
+        const lines = text.split(/\r?\n/);
+        let displayLines: string[] = [];
+
+        if (lines.length <= maxLines) {
+            displayLines = lines;
+        } else {
+            const part = lines.slice(0, maxLines);
+            const remaining = lines.slice(maxLines).join(' ');
+            part[maxLines - 1] = part[maxLines - 1] + ' ' + remaining;
+            displayLines = part;
+        }
+
+        return displayLines.map((ln, idx) => {
+            const arabic = isLineArabic(ln);
+            return (
+                <Text
+                    key={idx}
+                    style={[
+                        textStyle,
+                        {
+                            textAlign: arabic ? 'right' : 'left',
+                            writingDirection: arabic ? 'rtl' : 'ltr',
+                        },
+                    ]}
+                    numberOfLines={1}
+                >
+                    {ln}
+                </Text>
+            );
+        });
+    }
+
     const fetchProfileData = async () => {
         const user = auth.currentUser;
         if (user) {
@@ -131,7 +172,6 @@ export default function Home() {
             return () => backHandler.remove();
         }, [])
     );
-
 
     const onRefresh = async () => {
         setRefreshing(true);
@@ -222,7 +262,7 @@ export default function Home() {
                         keyExtractor={(item) => (item as Note).id}
                         numColumns={2}
                         showsVerticalScrollIndicator={false}
-                        style={{ gap: 10, marginBottom: 100, }}
+                        style={{ gap: 10, marginBottom: 100 }}
                         refreshControl={
                             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} /> as any
                         }
@@ -232,7 +272,7 @@ export default function Home() {
                                 <Pressable
                                     style={({ pressed }) => [
                                         styles.noteItem,
-                                        pressed && styles.noteItemPress
+                                        pressed && styles.noteItemPress,
                                     ]}
                                     onPress={() => {
                                         router.push({
@@ -241,14 +281,29 @@ export default function Home() {
                                                 id: note.id,
                                                 title: note.title,
                                                 note: note.note,
-                                            }
+                                            },
                                         });
                                     }}
                                 >
-                                    <Text style={styles.noteTitle}>{note.title}</Text>
-                                    <Text style={styles.noteText} numberOfLines={5}>
-                                        {note.note}
+                                    <Text
+                                        style={[
+                                            styles.noteTitle,
+                                            {
+                                                writingDirection: /[\u0600-\u06FF]/.test(note.title)
+                                                    ? 'rtl'
+                                                    : 'ltr',
+                                                textAlign: /[\u0600-\u06FF]/.test(note.title)
+                                                    ? 'right'
+                                                    : 'left',
+                                            },
+                                        ]}
+                                    >
+                                        {note.title}
                                     </Text>
+
+                                    <View style={{ marginTop: 6 }}>
+                                        {renderTextByLine(note.note, 5, styles.noteText)}
+                                    </View>
                                 </Pressable>
                             );
                         }}

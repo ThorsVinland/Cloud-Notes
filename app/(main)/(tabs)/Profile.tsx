@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { signOut } from 'firebase/auth';
 import { onValue, ref, set } from 'firebase/database';
+import { useFocusEffect } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -51,7 +52,6 @@ export default function Profile() {
 
     useEffect(() => {
         if (!auth.currentUser) return;
-        setUserEmail(auth.currentUser.email || 'No email');
 
         const nameRef = ref(database, `users/${auth.currentUser.uid}/name`);
         const unsubscribeName = onValue(nameRef, (snapshot) => {
@@ -68,6 +68,18 @@ export default function Profile() {
             unsubscribeImage();
         };
     }, []);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            if (auth.currentUser) {
+                auth.currentUser.reload().then(() => {
+                    setUserEmail(auth.currentUser?.email || 'No email');
+                }).catch(() => {
+                    setUserEmail(auth.currentUser?.email || 'No email');
+                });
+            }
+        }, [])
+    );
 
     const handleSaveName = async () => {
         if (isOffline) {

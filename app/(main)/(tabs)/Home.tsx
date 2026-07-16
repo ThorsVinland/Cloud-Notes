@@ -5,7 +5,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MasonryList from '@react-native-seoul/masonry-list';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { get, onValue, ref } from 'firebase/database';
+import { get, onValue, ref, update } from 'firebase/database';
 import {
     collection,
     onSnapshot,
@@ -102,6 +102,9 @@ export default function Home() {
             });
             setNotes(userNotes);
             setLoadingAll(false);
+        }, (error) => {
+            console.log("Firestore snapshot error:", error);
+            // Ignore permission-denied errors gracefully when token expires during email change
         });
 
         return unsubscribe;
@@ -116,7 +119,25 @@ export default function Home() {
     }, []);
 
     useFocusEffect(
-        useCallback(() => {
+        React.useCallback(() => {
+            const fetchNotes = async () => {
+                if (auth.currentUser) {
+                    const uid = auth.currentUser.uid;
+                    
+                    // Smart Sync: Check if Auth email changed (after clicking verify link)
+                    const userRef = ref(database, `users/${uid}`);
+                    get(userRef).then((snapshot) => {
+                        if (snapshot.exists()) {
+                            const dbEmail = snapshot.val().email;
+                            if (auth.currentUser?.email && dbEmail !== auth.currentUser.email) {
+                                update(userRef, { email: auth.currentUser.email });
+                            }
+                        }
+                    }).catch(console.error);
+                }
+            };
+            fetchNotes();
+
             const backAction = () => {
                 if (backPressCount.current === 0) {
                     backPressCount.current += 1;

@@ -1,12 +1,11 @@
-import Colors from "@/assets/Colors";
 import { StyleSheet } from "react-native";
 
-export default StyleSheet.create({
+export default (colors: any) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#0a0d14ff',
         // backgroundColor: '#2b2b2bff',
-        // backgroundColor: Colors.dark.primary,
+        // backgroundColor: colors.primary,
     },
     indicatorContainer: {
         flex: 1,
@@ -16,12 +15,12 @@ export default StyleSheet.create({
     title: {
         fontSize: 30,
         fontWeight: 'bold',
-        color: Colors.dark.white,
+        color: colors.white,
     },
     note: {
         fontSize: 17,
         fontWeight: '600',
-        color: Colors.dark.white,
+        color: colors.white,
     },
     header: {
         marginTop: 30,
@@ -30,7 +29,7 @@ export default StyleSheet.create({
         paddingHorizontal: 20,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        borderBottomColor: Colors.dark.white,
+        borderBottomColor: colors.white,
         borderBottomWidth: 1,
     },
     body: {
@@ -40,25 +39,25 @@ export default StyleSheet.create({
     bottomBar: {
         height: 100,
         borderTopWidth: 1,
-        borderTopColor: Colors.dark.white,
+        borderTopColor: colors.white,
         position: 'relative',
         bottom: 0,
         flexDirection: 'row',
         justifyContent: 'space-around',
-        backgroundColor: Colors.dark.primary,
+        backgroundColor: colors.primary,
     },
     iconText: {
-        color: Colors.dark.white,
+        color: colors.white,
         fontSize: 20,
     },
     copy: {
-        backgroundColor: Colors.dark.primary,
+        backgroundColor: colors.primary,
         height: 50,
         width: 50,
         borderRadius: 25,
         alignItems: 'center',
         justifyContent: 'center',
-        borderColor: Colors.dark.white,
+        borderColor: colors.white,
         borderWidth: 1,
     },
     copyPress: {
@@ -72,7 +71,7 @@ export default StyleSheet.create({
         paddingHorizontal: 16,
     },
     modalText: {
-        color: Colors.dark.white,
+        color: colors.white,
         fontSize: 16,
     },
 });

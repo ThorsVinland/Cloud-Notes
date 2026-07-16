@@ -1,12 +1,11 @@
-import Colors from "@/assets/Colors";
 import { Dimensions, Platform, StatusBar, StyleSheet } from "react-native";
 
 const width = Dimensions.get("window").width;
 
-export default StyleSheet.create({
+export default (colors: any) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.dark.primary,
+        backgroundColor: colors.primary,
         paddingHorizontal: 20,
     },
     header: {
@@ -20,7 +19,7 @@ export default StyleSheet.create({
         paddingHorizontal: 10,
     },
     headerText: {
-        color: Colors.dark.text,
+        color: colors.text,
         fontSize: 30,
         fontWeight: 'bold',
         marginLeft: 20,
@@ -29,7 +28,7 @@ export default StyleSheet.create({
         width: 50,
         height: 50,
         borderRadius: 25,
-        backgroundColor: Colors.dark.white,
+        backgroundColor: colors.white,
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
@@ -62,7 +61,7 @@ export default StyleSheet.create({
         resizeMode: 'cover',
     },
     noteItem: {
-        backgroundColor: Colors.dark.grayDark,
+        backgroundColor: colors.grayDark,
         padding: 15,
         borderRadius: 10,
         marginBottom: 10,
@@ -73,12 +72,12 @@ export default StyleSheet.create({
     noteTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: Colors.dark.text,
+        color: colors.text,
         marginBottom: 5,
     },
     noteText: {
         fontSize: 14,
-        color: Colors.dark.textL,
+        color: colors.textL,
     },
     modalView: {
         flex: 1,
@@ -92,7 +91,7 @@ export default StyleSheet.create({
     },
     noteViewText: {
         textAlign: 'center',
-        color: Colors.dark.white,
+        color: colors.white,
         fontSize: 25,
         fontWeight: '600',
     },

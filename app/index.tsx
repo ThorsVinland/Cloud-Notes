@@ -1,4 +1,4 @@
-import Colors from "@/assets/Colors";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { useEffect, useState } from "react";
@@ -12,6 +12,8 @@ import {
 import { auth } from '../FirebaseConfig';
 
 export default function Index() {
+    const { colors } = useTheme();
+    const styles = getStyles(colors);
 
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -25,7 +27,7 @@ export default function Index() {
 
       if (currentUser) {
         console.log('User Adnane');
-        router.replace('/(main)/Home');
+        router.replace('/(main)/(tabs)/Home');
       } else {
         console.log('User not Adnane');
         router.replace('/(auth)/SignIn');
@@ -44,7 +46,7 @@ export default function Index() {
         <View style={styles.container}>
           <ActivityIndicator
             size={50}
-            color={Colors.dark.white}
+            color={colors.white}
           />
           <Text style={styles.text}>Loading...</Text>
         </View>
@@ -55,17 +57,17 @@ export default function Index() {
   return null;
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 20,
-    backgroundColor: Colors.dark.primary,
+    backgroundColor: colors.background, // Fixed to use new colors
   },
   text: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: Colors.dark.white
+    color: colors.textMain // Fixed to use new colors
   },
 });

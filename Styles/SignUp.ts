@@ -1,16 +1,15 @@
-import Colors from "@/assets/Colors";
 import { Dimensions, StyleSheet } from "react-native";
 
 const width = Dimensions.get("window").width;
 
-export default StyleSheet.create({
+export default (colors: any) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.dark.primary,
+        backgroundColor: colors.primary,
         paddingHorizontal: 5,
     },
     header: {
-        backgroundColor: Colors.dark.primary,
+        backgroundColor: colors.primary,
         height: 200,
         alignItems: 'center',
         position: 'fixed',
@@ -18,12 +17,12 @@ export default StyleSheet.create({
     headerText: {
         fontSize: 35,
         fontWeight: 'bold',
-        color: Colors.dark.white,
+        color: colors.white,
         marginTop: 90,
     },
     body: {
         flex: 1,
-        backgroundColor: Colors.dark.white,
+        backgroundColor: colors.white,
         borderTopLeftRadius: 60,
         paddingHorizontal: 20,
     },
@@ -37,19 +36,19 @@ export default StyleSheet.create({
     textInout: {
         height: 60,
         borderWidth: 1.2,
-        borderColor: Colors.dark.primary,
+        borderColor: colors.primary,
         borderRadius: 13,
-        backgroundColor: Colors.dark.white,
+        backgroundColor: colors.white,
         paddingRight: 40,
         paddingLeft: 20,
         fontSize: 20,
-        color: Colors.dark.primary,
+        color: colors.primary,
         fontWeight: '500',
     },
     signup: {
         marginTop: 80,
         alignSelf: 'center',
-        backgroundColor: Colors.dark.primary,        
+        backgroundColor: colors.primary,        
         paddingVertical: 17,
         width: width - 100,
         alignItems: 'center',
@@ -57,11 +56,11 @@ export default StyleSheet.create({
         borderRadius: 15,
     },
     signupPress: {
-        backgroundColor: Colors.dark.grayDark,
+        backgroundColor: colors.grayDark,
         transform: [{ scale: 0.99 }]
     },
     signupText: {
-        color: Colors.dark.white,
+        color: colors.white,
         fontSize: 20,
         fontWeight: 'bold',
     },
@@ -78,11 +77,11 @@ export default StyleSheet.create({
         marginTop: 30,
         alignSelf: 'center',
         alignItems: 'center',
-        backgroundColor: Colors.dark.white,
+        backgroundColor: colors.white,
         gap: 5,
     },
     signin: {
-        backgroundColor: Colors.dark.white,
+        backgroundColor: colors.white,
         borderWidth: 0,
         elevation: 0,
         paddingHorizontal: 5,
@@ -93,12 +92,12 @@ export default StyleSheet.create({
     signinText: {
         fontSize: 19,
         fontWeight: '400',
-        color: Colors.dark.primary,
+        color: colors.primary,
     },
     signinPressText: {
         fontSize: 20,
         fontWeight: '700',
-        color: Colors.dark.primary,
+        color: colors.primary,
     },
     passwordView: {
         justifyContent: 'center',

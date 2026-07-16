@@ -1,10 +1,9 @@
-import Colors from "@/assets/Colors";
 import { StyleSheet } from "react-native";
 
-export default StyleSheet.create({
+export default (colors: any) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.dark.primary,
+        backgroundColor: colors.primary,
         paddingHorizontal: 20,
     },
     header: {
@@ -12,7 +11,7 @@ export default StyleSheet.create({
         paddingVertical: 80,
     },
     card: {
-        backgroundColor: Colors.dark.grayDark,
+        backgroundColor: colors.grayDark,
         borderRadius: 10,
         marginVertical: 10,
         padding: 15,
@@ -29,13 +28,13 @@ export default StyleSheet.create({
     name: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: Colors.dark.white,
+        color: colors.white,
         flex: 1,
     },
     email: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: Colors.dark.white,
+        color: colors.white,
         flex: 1,
     },
     iconButton: {
@@ -49,7 +48,7 @@ export default StyleSheet.create({
         height: 150,
         width: 150,
         borderRadius: 75,
-        backgroundColor: Colors.dark.white,
+        backgroundColor: colors.white,
         alignSelf: 'center',
         overflow: 'hidden',
         alignItems: 'center',
@@ -75,7 +74,7 @@ export default StyleSheet.create({
         transform: [{ scale: 0.96 }],
     },
     logoutText: {
-        color: Colors.dark.white,
+        color: colors.white,
         fontSize: 20,
         fontWeight: '800',
     },
@@ -86,11 +85,11 @@ export default StyleSheet.create({
     },
     ModalTextInput: {
         borderWidth: 1,
-        borderColor: Colors.dark.white,
+        borderColor: colors.white,
         borderRadius: 10,
         height: 60,
         fontSize: 20,
-        color: Colors.dark.white,
+        color: colors.white,
         paddingLeft: 18,
         paddingRight: 40,
     },
@@ -106,14 +105,14 @@ export default StyleSheet.create({
         gap: 20,
     },
     ModalSavePress: {
-        backgroundColor: Colors.dark.grayLight,
+        backgroundColor: colors.grayLight,
         width: 120,
         alignItems: 'center',
         paddingVertical: 10,
         borderRadius: 10,
     },
     ModalSavePressText: {
-        color: Colors.dark.primary,
+        color: colors.primary,
         fontSize: 18,
         fontWeight: '700',
     },

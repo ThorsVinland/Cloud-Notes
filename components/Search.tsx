@@ -1,12 +1,11 @@
 import {
     StyleSheet,
-    Text,
     View,
     TextInput,
     Pressable,
 } from 'react-native';
 import React from 'react';
-import Colors from '@/assets/Colors';
+import { useTheme } from "@/contexts/ThemeContext";
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 interface SearchProps {
@@ -15,48 +14,53 @@ interface SearchProps {
 }
 
 export default function Search({ value, onChangeText }: SearchProps) {
+    const { colors } = useTheme();
+    const styles = getStyles(colors);
   return (
     <View style={styles.container}>
+        <View style={styles.searchIcon}>
+            <Ionicons name='search' size={20} color={colors.textMuted} />
+        </View>
         <TextInput
-            placeholder='Search'
-            placeholderTextColor={Colors.dark.gray}
+            placeholder='Search notes...'
+            placeholderTextColor={colors.textMuted}
             style={styles.search}
             value={value}
             onChangeText={onChangeText}
+            cursorColor={colors.accent}
         />
         {value.length > 0 &&(
             <Pressable
                 style={styles.clearBtn}
                 onPress={() => onChangeText('')}
             >
-                <Ionicons name='close-circle' size={24} color={Colors.dark.grayLight} />
+                <Ionicons name='close-circle' size={20} color={colors.textMuted} />
             </Pressable>
         )}
     </View>
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
     container: {
-        position: 'relative',
-        justifyContent: 'center',
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.surfaceHighlight,
+        borderRadius: 16,
+        paddingHorizontal: 16,
+        height: 50,
+        borderWidth: 1,
+        borderColor: colors.border,
+    },
+    searchIcon: {
+        marginRight: 8,
     },
     search: {
-        borderWidth: 1,
-        borderColor: Colors.dark.white,
-        marginTop: 30,
-        height: 60,
-        borderRadius: 15,
-        fontSize: 18,
-        fontWeight: '600',
-        color: Colors.dark.white,
-        paddingLeft: 20,
-        paddingRight: 50,
-        marginBottom: 50,
+        flex: 1,
+        fontSize: 16,
+        color: colors.textMain,
     },
     clearBtn: {
-        position: 'absolute',
-        right: 15,
-        top: 45,
+        padding: 4,
     },
 })

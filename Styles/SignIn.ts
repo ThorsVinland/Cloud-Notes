@@ -1,29 +1,34 @@
-import Colors from "@/assets/Colors";
 import { Dimensions, StyleSheet } from "react-native";
 
 const Widthh = Dimensions.get("window").width;
 
-export default StyleSheet.create({
+export default (colors: any) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.dark.primary,
+        backgroundColor: colors.primary,
         paddingHorizontal: 5,
     },
     header: {
-        backgroundColor: Colors.dark.primary,
+        backgroundColor: colors.primary,
         height: 200,
         alignItems: 'center',
-        position: 'fixed',
+        position: 'fixed' as any, // 'fixed' is not a valid React Native position type, adding 'as any' to avoid TS error if it was working
+    },
+    themeToggleBtn: {
+        position: 'absolute',
+        top: 50,
+        right: 20,
+        padding: 10,
     },
     headerText: {
         fontSize: 35,
         fontWeight: 'bold',
-        color: Colors.dark.white,
+        color: colors.white,
         marginTop: 90,
     },
     body: {
         flex: 1,
-        backgroundColor: Colors.dark.white,
+        backgroundColor: colors.white,
         borderTopLeftRadius: 60,
         paddingHorizontal: 20,
     },
@@ -33,17 +38,18 @@ export default StyleSheet.create({
         marginBottom: 100,
         fontSize: 30,
         fontWeight: 'bold',
+        color: colors.primary,
     },
     textInout: {
         height: 60,
         borderWidth: 1.2,
-        borderColor: Colors.dark.primary,
+        borderColor: colors.primary,
         borderRadius: 13,
-        backgroundColor: Colors.dark.white,
+        backgroundColor: colors.white,
         paddingRight: 40,
         paddingLeft: 20,
         fontSize: 20,
-        color: Colors.dark.primary,
+        color: colors.primary,
         fontWeight: '600',
     },
     forgotView: {
@@ -59,12 +65,12 @@ export default StyleSheet.create({
     forgotText: {
         fontSize: 16,
         fontWeight: '500',
-        color: Colors.dark.primary,
+        color: colors.primary,
     },
     signin: {
-        marginTop: 120,
+        marginTop: 20,
         alignSelf: 'center',
-        backgroundColor: Colors.dark.primary,
+        backgroundColor: colors.primary,
         paddingVertical: 17,
         width: Widthh - 100,
         alignItems: 'center',
@@ -72,11 +78,11 @@ export default StyleSheet.create({
         borderRadius: 15,
     },
     signinPress: {
-        backgroundColor: Colors.dark.grayDark,
+        backgroundColor: colors.grayDark,
         transform: [{ scale: 0.99 }]
     },
     signinText: {
-        color: Colors.dark.white,
+        color: colors.white,
         fontSize: 20,
         fontWeight: 'bold',
     },
@@ -85,11 +91,11 @@ export default StyleSheet.create({
         marginTop: 30,
         alignSelf: 'center',
         alignItems: 'center',
-        backgroundColor: Colors.dark.white,
+        backgroundColor: colors.white,
         gap: 5,
     },
     signup: {
-        backgroundColor: Colors.dark.white,
+        backgroundColor: colors.white,
         borderWidth: 0,
         elevation: 0,
         paddingHorizontal: 5,
@@ -98,14 +104,16 @@ export default StyleSheet.create({
         transform: [{ scale: 0.97 }]
     },
     signupText: {
+        marginTop: 130,
         fontSize: 19,
         fontWeight: '400',
-        color: Colors.dark.primary,
+        color: colors.primary,
     },
     signupPressText: {
+        marginTop: 130,
         fontSize: 20,
         fontWeight: '700',
-        color: Colors.dark.primary,
+        color: colors.primary,
     },
     passwordView: {
         justifyContent: 'center',
@@ -120,4 +128,4 @@ export default StyleSheet.create({
         justifyContent: 'center',
         paddingHorizontal: 5,
     },
-});
+});

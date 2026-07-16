@@ -1,4 +1,4 @@
-import Colors from '@/assets/Colors';
+import { useTheme } from "@/contexts/ThemeContext";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
@@ -11,13 +11,23 @@ import {
     Text,
     TextInput,
     TouchableWithoutFeedback,
-    View
+    View,
+    StyleSheet,
+    KeyboardAvoidingView,
+    Platform
 } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { useNetwork } from '@/contexts/NetworkContext';
 import { auth } from '../../FirebaseConfig';
-import styles from '../../Styles/SignIn';
 
 export default function SignIn() {
+    const { colors, isDark, setTheme } = useTheme();
+    const { isOffline } = useNetwork();
+    const styles = getStyles(colors);
+
+    const toggleTheme = () => {
+        setTheme(isDark ? 'light' : 'dark');
+    };
 
     const router = useRouter();
     const [email, setEmail] = useState('');
@@ -54,13 +64,18 @@ export default function SignIn() {
     };
 
     const handleSignIn = async () => {
+        if (isOffline) {
+            Toast.show({ type: 'error', text1: 'You are offline', text2: 'Please connect to the internet to sign in.' });
+            return;
+        }
+
         if (!validate()) return;
 
         try {
             setLoading(true);
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            console.log("Loginned");
-            router.replace('/Home');
+            await signInWithEmailAndPassword(auth, email, password);
+            console.log("Logged in");
+            router.replace('/(main)/(tabs)/Home');
         } catch (error: any) {
             console.error('Error: ', error);
 
@@ -78,8 +93,13 @@ export default function SignIn() {
     };
 
     const handleForgotPassword = async () => {
+        if (isOffline) {
+            Toast.show({ type: 'error', text1: 'You are offline', text2: 'Please connect to the internet to reset password.' });
+            return;
+        }
+
         if (!email) {
-            setEmailError("Please enter your email first");
+            setEmailError("Please enter your email first to reset password");
             return;
         }
 
@@ -95,8 +115,6 @@ export default function SignIn() {
 
             setForgotLoading(false);
         } catch (error: any) {
-            console.log('Email !!!!');
-
             if (error.code === "auth/invalid-email") {
                 setEmailError("Invalid email address");
             } else if (error.code === "auth/user-not-found") {
@@ -111,121 +129,249 @@ export default function SignIn() {
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-            <View style={styles.container}>
-                <StatusBar hidden />
-                <View style={styles.header}>
-                    <Text style={styles.headerText}>Cloud Note</Text>
-                </View>
-                <View style={styles.body}>
-                    <Text style={styles.bodyText}>Sign In</Text>
-
-                    <TextInput
-                        placeholder='Email'
-                        placeholderTextColor={'gray'}
-                        cursorColor={Colors.dark.primary}
-                        autoCapitalize='none'
-                        style={styles.textInout}
-                        value={email}
-                        onChangeText={(text) => {
-                            setEmail(text);
-                            if (emailError) setEmailError('');
-                        }}
-                        returnKeyType='next'
-                        onSubmitEditing={() => passwordRef.current?.focus()}
-                    />
-                    <View style={styles.errorView}>
-                        {emailError ? (
-                            <Text style={{
-                                color: 'red',
-                            }}>{emailError}</Text>
-                        ) : null}
-                    </View>
-
-                    <View style={styles.passwordView}>
-                        <TextInput
-                            ref={passwordRef}
-                            placeholder='Password'
-                            placeholderTextColor={'gray'}
-                            cursorColor={Colors.dark.primary}
-                            autoCapitalize='none'
-                            style={styles.textInout}
-                            value={password}
-                            onChangeText={(text) => {
-                                setPassword(text);
-                                if (passwordError) setPasswordError('');
-                            }}
-                            secureTextEntry={!passwordShow}
-                            returnKeyType='done'
-                            onSubmitEditing={handleSignIn}
-                        />
-                        <Pressable
-                            onPress={() => setPasswordShow(!passwordShow)}
-                            style={styles.passwordPress}
-                        >
-                            <Ionicons
-                                name={passwordShow ? 'eye' : 'eye-off'}
-                                size={30}
-                                color={Colors.dark.primary}
-                            />
-                        </Pressable>
-                    </View>
-
-                    <View style={styles.errorView}>
-                        {passwordError ? (
-                            <Text style={{
-                                color: 'red',
-                            }}>{passwordError}</Text>
-                        ) : null}
-                    </View>
-                    <View style={styles.forgotView}>
-                        <Pressable
-                            style={({ pressed }) => [
-                                pressed && styles.forgotPress
-                            ]}
-                            onPress={handleForgotPassword}
-                        >
-                            {forgotLoading ? (
-                                <ActivityIndicator
-                                    size={30}
-                                    color={Colors.dark.primary}
-                                    style={{ alignSelf: 'center' }}
-                                />
-                            ) : (
-                                <Text style={styles.forgotText}>Forgot password?</Text>
-                            )
-                            }
-                        </Pressable>
-                    </View>
-                    <Pressable
-                        style={({ pressed }) => [
-                            styles.signin,
-                            pressed && styles.signinPress
-                        ]}
-                        onPress={handleSignIn}
-                    >
-                        {loading ? (
-                            <ActivityIndicator
-                                size={'large'}
-                                color={Colors.dark.white}
-                            />
-                        ) : (
-                            <Text style={styles.signinText}>Sign in</Text>
-                        )}
+            <KeyboardAvoidingView 
+                style={styles.container} 
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
+                <StatusBar hidden={false} barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
+                
+                <View style={styles.headerContainer}>
+                    <Pressable onPress={toggleTheme} style={styles.themeToggleBtn}>
+                        <Ionicons name={isDark ? 'moon' : 'sunny'} size={24} color={colors.textMain} />
                     </Pressable>
-                    <View style={styles.signupView}>
-                        <Text style={styles.signupText}>You don't have an acount?</Text>
+                </View>
+
+                <View style={styles.content}>
+                    <View style={styles.titleContainer}>
+                        <Text style={styles.title}>Welcome Back</Text>
+                        <Text style={styles.subtitle}>Sign in to continue to Cloud Notes</Text>
+                    </View>
+
+                    <View style={styles.formContainer}>
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>Email Address</Text>
+                            <TextInput
+                                placeholder='name@example.com'
+                                placeholderTextColor={colors.textMuted}
+                                cursorColor={colors.accent}
+                                autoCapitalize='none'
+                                keyboardType='email-address'
+                                style={[styles.input, emailError ? styles.inputError : null]}
+                                value={email}
+                                onChangeText={(text) => {
+                                    setEmail(text);
+                                    if (emailError) setEmailError('');
+                                }}
+                                returnKeyType='next'
+                                onSubmitEditing={() => passwordRef.current?.focus()}
+                                editable={!isOffline}
+                            />
+                            {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+                        </View>
+
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>Password</Text>
+                            <View style={[styles.passwordContainer, passwordError ? styles.inputError : null]}>
+                                <TextInput
+                                    ref={passwordRef}
+                                    placeholder='••••••••'
+                                    placeholderTextColor={colors.textMuted}
+                                    cursorColor={colors.accent}
+                                    autoCapitalize='none'
+                                    style={styles.passwordInput}
+                                    value={password}
+                                    onChangeText={(text) => {
+                                        setPassword(text);
+                                        if (passwordError) setPasswordError('');
+                                    }}
+                                    secureTextEntry={!passwordShow}
+                                    returnKeyType='done'
+                                    onSubmitEditing={handleSignIn}
+                                    editable={!isOffline}
+                                />
+                                <Pressable
+                                    onPress={() => setPasswordShow(!passwordShow)}
+                                    style={styles.eyeIcon}
+                                >
+                                    <Ionicons
+                                        name={passwordShow ? 'eye-outline' : 'eye-off-outline'}
+                                        size={22}
+                                        color={colors.textMuted}
+                                    />
+                                </Pressable>
+                            </View>
+                            {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+                        </View>
+
+                        <View style={styles.forgotPasswordContainer}>
+                            <Pressable onPress={handleForgotPassword} disabled={forgotLoading || isOffline}>
+                                {forgotLoading ? (
+                                    <ActivityIndicator size="small" color={colors.accent} />
+                                ) : (
+                                    <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                                )}
+                            </Pressable>
+                        </View>
+
                         <Pressable
                             style={({ pressed }) => [
-                                styles.signup,
-                                pressed && styles.signupPress
+                                styles.primaryButton,
+                                (pressed || isOffline) && styles.primaryButtonPressed,
+                                { marginTop: 10, opacity: isOffline ? 0.6 : 1 }
                             ]}
-                            onPress={() => router.replace('/SignUp')}
+                            onPress={handleSignIn}
+                            disabled={loading || isOffline}
                         >
-                            <Text style={styles.signupPressText}>Sign up</Text>
+                            {loading ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={styles.primaryButtonText}>Sign In</Text>
+                            )}
                         </Pressable>
+
+                        <View style={styles.footer}>
+                            <Text style={styles.footerText}>Don't have an account? </Text>
+                            <Pressable onPress={() => router.replace('/SignUp')}>
+                                <Text style={styles.footerLink}>Sign Up</Text>
+                            </Pressable>
+                        </View>
                     </View>
                 </View>
-            </View>
+            </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
     )
 }
+
+const getStyles = (colors: any) => StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: colors.background,
+    },
+    headerContainer: {
+        paddingTop: Platform.OS === 'ios' ? 50 : 20,
+        paddingHorizontal: 20,
+        alignItems: 'flex-end',
+    },
+    themeToggleBtn: {
+        padding: 10,
+        backgroundColor: colors.surfaceHighlight,
+        borderRadius: 50,
+    },
+    content: {
+        flex: 1,
+        justifyContent: 'center',
+        paddingHorizontal: 24,
+    },
+    titleContainer: {
+        marginBottom: 40,
+    },
+    title: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: colors.textMain,
+        marginBottom: 10,
+    },
+    subtitle: {
+        fontSize: 16,
+        color: colors.textMuted,
+    },
+    formContainer: {
+        backgroundColor: colors.surface,
+        padding: 24,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: colors.border,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+        elevation: 2,
+    },
+    inputGroup: {
+        marginBottom: 20,
+    },
+    label: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: colors.textMain,
+        marginBottom: 8,
+    },
+    input: {
+        backgroundColor: colors.surfaceHighlight,
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderRadius: 12,
+        padding: 16,
+        fontSize: 16,
+        color: colors.textMain,
+    },
+    inputError: {
+        borderColor: colors.danger,
+    },
+    errorText: {
+        color: colors.danger,
+        fontSize: 12,
+        marginTop: 6,
+    },
+    passwordContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.surfaceHighlight,
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderRadius: 12,
+    },
+    passwordInput: {
+        flex: 1,
+        padding: 16,
+        fontSize: 16,
+        color: colors.textMain,
+    },
+    eyeIcon: {
+        padding: 16,
+    },
+    forgotPasswordContainer: {
+        alignItems: 'flex-end',
+        marginBottom: 24,
+    },
+    forgotPasswordText: {
+        color: colors.accent,
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    primaryButton: {
+        backgroundColor: colors.accent,
+        borderRadius: 12,
+        padding: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: colors.accent,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    primaryButtonPressed: {
+        backgroundColor: colors.accentHover,
+        transform: [{ scale: 0.98 }],
+    },
+    primaryButtonText: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    footer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginTop: 24,
+    },
+    footerText: {
+        color: colors.textMuted,
+        fontSize: 14,
+    },
+    footerLink: {
+        color: colors.accent,
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+});

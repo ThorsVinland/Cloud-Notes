@@ -1,42 +1,46 @@
-import Colors from "@/assets/Colors";
 import { Stack } from "expo-router";
 import Toast, { BaseToast, ErrorToast } from "react-native-toast-message";
+import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
+import { NetworkProvider } from "@/contexts/NetworkContext";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-const toastConfig = {
-  success: (props: any) => (
-    <BaseToast
-      {...props}
-      style={{ borderLeftColor: Colors.dark.grayDark, backgroundColor: Colors.dark.grayLight }}
-      contentContainerStyle={{ paddingHorizontal: 15 }}
-      text1Style={{
-        fontSize: 16,
-        fontWeight: "bold",
-        color: Colors.dark.primary,
-      }}
-      text2Style={{
-        fontSize: 14,
-        color: Colors.dark.primary,
-      }}
-    />
-  ),
-  error: (props: any) => (
-    <ErrorToast
-      {...props}
-      style={{ borderLeftColor: "red", backgroundColor: "#222" }}
-      text1Style={{
-        fontSize: 16,
-        fontWeight: "bold",
-        color: "white",
-      }}
-      text2Style={{
-        fontSize: 14,
-        color: "#ccc",
-      }}
-    />
-  ),
-};
+function RootLayoutInner() {
+  const { colors } = useTheme();
 
-export default function RootLayout() {
+  const toastConfig = {
+    success: (props: any) => (
+      <BaseToast
+        {...props}
+        style={{ borderLeftColor: colors.success, backgroundColor: colors.surface }}
+        contentContainerStyle={{ paddingHorizontal: 15 }}
+        text1Style={{
+          fontSize: 16,
+          fontWeight: "bold",
+          color: colors.textMain,
+        }}
+        text2Style={{
+          fontSize: 14,
+          color: colors.textMuted,
+        }}
+      />
+    ),
+    error: (props: any) => (
+      <ErrorToast
+        {...props}
+        style={{ borderLeftColor: colors.danger, backgroundColor: colors.surface }}
+        text1Style={{
+          fontSize: 16,
+          fontWeight: "bold",
+          color: colors.textMain,
+        }}
+        text2Style={{
+          fontSize: 14,
+          color: colors.textMuted,
+        }}
+      />
+    ),
+  };
+
   return (
     <>
       <Stack screenOptions={{ headerShown: false }}>
@@ -47,5 +51,17 @@ export default function RootLayout() {
 
       <Toast config={toastConfig} />
     </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NetworkProvider>
+        <ThemeProvider>
+          <RootLayoutInner />
+        </ThemeProvider>
+      </NetworkProvider>
+    </GestureHandlerRootView>
   );
 }

@@ -1,5 +1,5 @@
-import Colors from '@/assets/Colors';
 import React from 'react';
+import { useTheme } from "@/contexts/ThemeContext";
 import {
     Modal,
     Pressable,
@@ -24,6 +24,7 @@ export default function CustomAlert({
     onClose,
     onConfirm,
 }: CustomAlertProps) {
+    const { colors } = useTheme();
     return (
         <Modal
             visible={visible}
@@ -43,7 +44,7 @@ export default function CustomAlert({
                 <Pressable
                     style={{
                         width: '80%',
-                        backgroundColor: Colors.dark.white,
+                        backgroundColor: colors.surface,
                         padding: 20,
                         borderRadius: 12,
                         elevation: 5,
@@ -55,13 +56,13 @@ export default function CustomAlert({
                             fontSize: 23,
                             fontWeight: 'bold',
                             marginBottom: 10,
-                            color: Colors.dark.primary,
+                            color: colors.textMain,
                         }}
                     >{title}</Text>
                     <Text
                         style={{
                             fontSize: 16,
-                            color: Colors.dark.primary,
+                            color: colors.textMuted,
                             marginBottom: 20,
                         }}
                     >
@@ -78,7 +79,7 @@ export default function CustomAlert({
                             onPress={onClose}
                         >
                             <Text style={{
-                                color: 'red',
+                                color: colors.danger,
                                 fontWeight: '700',
                                 fontSize: 16
                             }}>Cancel</Text>
@@ -89,7 +90,7 @@ export default function CustomAlert({
                                 onPress={onConfirm}
                             >
                                 <Text style={{
-                                    color: 'blue',
+                                    color: colors.accent,
                                     fontWeight: '700',
                                     fontSize: 16,
                                 }}>{confirmText}</Text>

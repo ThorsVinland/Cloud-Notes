@@ -1,10 +1,9 @@
-import Colors from "@/assets/Colors";
 import { StyleSheet } from "react-native";
 
-export default StyleSheet.create({
+export default (colors: any) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.dark.primary,
+        backgroundColor: colors.primary,
         paddingHorizontal: 20,
     },
     textInputView: {
@@ -12,11 +11,11 @@ export default StyleSheet.create({
     },
     textInput: {
         borderWidth: 1,
-        borderColor: Colors.dark.white,
+        borderColor: colors.white,
         marginTop: 30,
         borderRadius: 15,
         fontSize: 18,
-        color: Colors.dark.white,
+        color: colors.white,
         paddingLeft: 20,
         paddingRight: 50,
     },

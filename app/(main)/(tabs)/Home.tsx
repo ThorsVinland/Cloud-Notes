@@ -5,7 +5,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MasonryList from '@react-native-seoul/masonry-list';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { get, onValue, ref, update } from 'firebase/database';
+import { get, onValue, ref, update, set } from 'firebase/database';
 import {
     collection,
     onSnapshot,
@@ -13,7 +13,12 @@ import {
     query,
     Timestamp,
     where,
+    addDoc,
+    doc,
+    updateDoc,
+    deleteDoc
 } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -26,7 +31,8 @@ import {
     Text,
     View,
     StyleSheet,
-    Platform
+    Platform,
+    Animated
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useNetwork } from '@/contexts/NetworkContext';
@@ -53,6 +59,29 @@ export default function Home() {
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
     const backPressCount = useRef(0);
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [showSyncBar, setShowSyncBar] = useState(false);
+    const syncAnim = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        if (isSyncing) {
+            setShowSyncBar(true);
+            syncAnim.setValue(0);
+            Animated.timing(syncAnim, {
+                toValue: 0.8,
+                duration: 1500,
+                useNativeDriver: false,
+            }).start();
+        } else if (showSyncBar) {
+            Animated.timing(syncAnim, {
+                toValue: 1,
+                duration: 500,
+                useNativeDriver: false,
+            }).start(() => {
+                setTimeout(() => setShowSyncBar(false), 500);
+            });
+        }
+    }, [isSyncing]);
 
     const serializeTimestamp = (value?: Timestamp | Date | string | null) => {
         if (!value) return '';
@@ -68,20 +97,32 @@ export default function Home() {
         const user = auth.currentUser;
         if (user) {
             try {
-                const userRef = ref(database, 'users/' + user.uid);
-                const snapshot = await get(userRef);
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
+                const cachedProfile = await AsyncStorage.getItem(`profile_${user.uid}`);
+                if (cachedProfile) {
+                    const data = JSON.parse(cachedProfile);
                     setName(data.name || '');
-                    if (data.profileImage) {
-                        setProfileImage(data.profileImage);
+                    setProfileImage(data.profileImage || null);
+                }
+                setLoading(false);
+
+                if (!isOffline) {
+                    const userRef = ref(database, 'users/' + user.uid);
+                    const snapshot = await get(userRef);
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        setName(data.name || '');
+                        if (data.profileImage) {
+                            setProfileImage(data.profileImage);
+                        }
+                        await AsyncStorage.setItem(`profile_${user.uid}`, JSON.stringify(data));
                     }
                 }
             } catch (error) {
                 console.error('Error fetching profile data:', error);
-            } finally {
                 setLoading(false);
             }
+        } else {
+            setLoading(false);
         }
     };
 
@@ -89,19 +130,70 @@ export default function Home() {
         const user = auth.currentUser;
         if (!user) return;
 
+        setIsSyncing(!isOffline);
+
         const q = query(
             collection(firestore, 'notes'),
             where('uid', '==', user.uid),
             orderBy('createdAt', 'desc')
         );
 
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const userNotes: Note[] = [];
+        AsyncStorage.getItem(`notes_${user.uid}`).then(cachedNotes => {
+            if (cachedNotes) {
+                setNotes(JSON.parse(cachedNotes));
+            }
+            setLoadingAll(false);
+        });
+
+        const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+            const isFromCache = querySnapshot.metadata.fromCache;
+            
+            if (!isFromCache) {
+                setIsSyncing(false);
+            }
+
+            if (isFromCache) {
+                setLoadingAll(false);
+                return; // Ignore pure cache snapshots to preserve our AsyncStorage manual state
+            }
+
+            let userNotes: Note[] = [];
             querySnapshot.forEach((doc) => {
                 userNotes.push({ id: doc.id, ...doc.data() } as Note);
             });
+
+            try {
+                const pending = await AsyncStorage.getItem(`pending_notes_${user.uid}`);
+                if (pending) {
+                    const pendingNotes = JSON.parse(pending);
+                    for (const item of pendingNotes) {
+                        if (item.action === 'add') {
+                            if (!userNotes.some(n => n.title === item.title && n.note === item.note)) {
+                                userNotes.unshift({
+                                    id: item.id,
+                                    title: item.title,
+                                    note: item.note,
+                                    createdAt: { toDate: () => new Date(item.timestamp) } as any,
+                                });
+                            }
+                        } else if (item.action === 'update') {
+                            const index = userNotes.findIndex(n => n.id === item.id);
+                            if (index >= 0) {
+                                userNotes[index] = { ...userNotes[index], title: item.title, note: item.note };
+                            }
+                        } else if (item.action === 'delete') {
+                            const index = userNotes.findIndex(n => n.id === item.id);
+                            if (index >= 0) {
+                                userNotes.splice(index, 1);
+                            }
+                        }
+                    }
+                }
+            } catch(e) {}
+
             setNotes(userNotes);
             setLoadingAll(false);
+            AsyncStorage.setItem(`notes_${user.uid}`, JSON.stringify(userNotes));
         }, (error) => {
             console.log("Firestore snapshot error:", error);
             // Ignore permission-denied errors gracefully when token expires during email change
@@ -118,11 +210,97 @@ export default function Home() {
         };
     }, []);
 
+    useEffect(() => {
+        if (!isOffline && auth.currentUser) {
+            const syncPending = async () => {
+                try {
+                    const pending = await AsyncStorage.getItem(`pending_notes_${auth.currentUser.uid}`);
+                    if (pending) {
+                        let pendingNotes = JSON.parse(pending);
+                        while (pendingNotes.length > 0) {
+                            const item = pendingNotes[0];
+                            try {
+                                if (item.action === 'add') {
+                                    await addDoc(collection(firestore, 'notes'), {
+                                        uid: auth.currentUser.uid,
+                                        title: item.title,
+                                        note: item.note,
+                                        createdAt: new Date(item.timestamp),
+                                    });
+                                } else if (item.action === 'update') {
+                                    await updateDoc(doc(firestore, 'notes', item.id), {
+                                        title: item.title,
+                                        note: item.note,
+                                        updatedAt: new Date(item.timestamp),
+                                    });
+                                } else if (item.action === 'delete') {
+                                    await deleteDoc(doc(firestore, 'notes', item.id));
+                                }
+                            } catch (e) {
+                                console.log('Skipping invalid pending item', e);
+                            }
+                            pendingNotes.shift();
+                            await AsyncStorage.setItem(`pending_notes_${auth.currentUser.uid}`, JSON.stringify(pendingNotes));
+                        }
+                        await AsyncStorage.removeItem(`pending_notes_${auth.currentUser.uid}`);
+                        Toast.show({ type: 'success', text1: 'Offline notes synced!' });
+                    }
+
+                    // Sync Profile Name
+                    const pendingName = await AsyncStorage.getItem(`pending_profile_name_${auth.currentUser.uid}`);
+                    if (pendingName) {
+                        await update(ref(database, `users/${auth.currentUser.uid}`), { name: pendingName });
+                        await AsyncStorage.removeItem(`pending_profile_name_${auth.currentUser.uid}`);
+                        Toast.show({ type: 'success', text1: 'Profile name synced!' });
+                    }
+                    
+                    // Sync Profile Image Remove
+                    const pendingRemove = await AsyncStorage.getItem(`pending_profile_image_remove_${auth.currentUser.uid}`);
+                    if (pendingRemove) {
+                        await set(ref(database, `users/${auth.currentUser.uid}/profileImage`), null);
+                        await AsyncStorage.removeItem(`pending_profile_image_remove_${auth.currentUser.uid}`);
+                    }
+
+                    // Sync Profile Image Upload
+                    const pendingImage = await AsyncStorage.getItem(`pending_profile_image_${auth.currentUser.uid}`);
+                    if (pendingImage) {
+                        try {
+                            const data = new FormData();
+                            data.append('file', { uri: pendingImage, type: 'image/jpeg', name: 'profile.jpg' } as any);
+                            data.append('upload_preset', 'Note_preset');
+
+                            const res = await fetch('https://api.cloudinary.com/v1_1/dwqzl5ukg/image/upload', {
+                                method: 'POST',
+                                body: data,
+                            });
+                            const json = await res.json();
+                            if (json.secure_url) {
+                                await set(ref(database, `users/${auth.currentUser.uid}/profileImage`), json.secure_url);
+                                await AsyncStorage.removeItem(`pending_profile_image_${auth.currentUser.uid}`);
+                                Toast.show({ type: 'success', text1: 'Profile photo synced!' });
+                            }
+                        } catch (e) { console.log('Image upload sync failed', e); }
+                    }
+
+                } catch (error) {
+                    console.error('Error syncing pending notes:', error);
+                }
+            };
+            syncPending();
+        }
+    }, [isOffline]);
+
     useFocusEffect(
         React.useCallback(() => {
             const fetchNotes = async () => {
                 if (auth.currentUser) {
                     const uid = auth.currentUser.uid;
+                    
+                    // Load immediately from cache for faster UI
+                    const cachedNotes = await AsyncStorage.getItem(`notes_${uid}`);
+                    if (cachedNotes) {
+                        setNotes(JSON.parse(cachedNotes));
+                    }
                     
                     // Smart Sync: Check if Auth email changed (after clicking verify link)
                     const userRef = ref(database, `users/${uid}`);
@@ -199,7 +377,20 @@ export default function Home() {
     return (
         <View style={styles.container}>
             <StatusBar hidden={false} barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.background} />
-            <View style={styles.header}>
+            
+            {showSyncBar && (
+                <View style={styles.syncBarContainer}>
+                    <Animated.View style={[styles.syncBar, {
+                        backgroundColor: colors.accent,
+                        width: syncAnim.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: ['0%', '100%']
+                        })
+                    }]} />
+                </View>
+            )}
+
+            <View style={[styles.header, showSyncBar && { paddingTop: Platform.OS === 'ios' ? 57 : 27 }]}>
                     <View style={styles.profile}>
                         <Image
                             source={profileImage ? { uri: profileImage } : require('../../../assets/images/user.png')}
@@ -304,6 +495,17 @@ const getStyles = (colors: any) => StyleSheet.create({
         paddingHorizontal: 20,
         paddingTop: Platform.OS === 'ios' ? 60 : 30,
         paddingBottom: 20,
+    },
+    syncBarContainer: {
+        width: '100%',
+        height: 3,
+        backgroundColor: colors.surfaceHighlight,
+        position: 'absolute',
+        top: Platform.OS === 'ios' ? 50 : 20,
+        zIndex: 50,
+    },
+    syncBar: {
+        height: '100%',
     },
     profile: {
         marginRight: 16,
@@ -418,7 +620,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     },
     addView: {
         position: 'absolute',
-        bottom: 90,
+        bottom: 125,
         right: 20,
         width: 60,
         height: 60,

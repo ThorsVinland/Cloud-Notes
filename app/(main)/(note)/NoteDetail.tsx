@@ -3,6 +3,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { auth, firestore } from '@/FirebaseConfig';
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNetwork } from '@/contexts/NetworkContext';
 import { addDoc, collection, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState, useRef } from 'react';
 import {
@@ -23,6 +25,7 @@ import Toast from 'react-native-toast-message';
 
 export default function NoteDetail() {
     const { colors, isDark } = useTheme();
+    const { isOffline } = useNetwork();
     const router = useRouter();
     const { id, title: oldTitle, note: oldNote, createdAt, updatedAt } = useLocalSearchParams<{
         id?: string;
@@ -75,26 +78,72 @@ export default function NoteDetail() {
             Keyboard.dismiss();
             setLoading(true);
 
+            if (isOffline) {
+                const newId = id || Date.now().toString();
+                const pending = await AsyncStorage.getItem(`pending_notes_${auth.currentUser.uid}`);
+                let pendingNotes = pending ? JSON.parse(pending) : [];
+                
+                const existingAddIndex = pendingNotes.findIndex((p: any) => p.id === id && p.action === 'add');
+                if (existingAddIndex >= 0) {
+                    pendingNotes[existingAddIndex] = {
+                        ...pendingNotes[existingAddIndex],
+                        title: title.trim(),
+                        note: note.trim(),
+                        timestamp: new Date().toISOString()
+                    };
+                } else {
+                    pendingNotes.push({
+                        action: id ? 'update' : 'add',
+                        id: newId,
+                        title: title.trim(),
+                        note: note.trim(),
+                        timestamp: new Date().toISOString()
+                    });
+                }
+                await AsyncStorage.setItem(`pending_notes_${auth.currentUser.uid}`, JSON.stringify(pendingNotes));
+
+                const cached = await AsyncStorage.getItem(`notes_${auth.currentUser.uid}`);
+                if (cached) {
+                    let localNotes = JSON.parse(cached);
+                    const newNoteObj = {
+                        id: newId,
+                        title: title.trim(),
+                        note: note.trim(),
+                        updatedAt: new Date().toISOString(),
+                        createdAt: id ? undefined : new Date().toISOString()
+                    };
+                    if (id) {
+                        localNotes = localNotes.map((n: any) => n.id === id ? { ...n, ...newNoteObj } : n);
+                    } else {
+                        localNotes.unshift(newNoteObj);
+                    }
+                    await AsyncStorage.setItem(`notes_${auth.currentUser.uid}`, JSON.stringify(localNotes));
+                }
+
+                Toast.show({ type: 'info', text1: 'Saved Offline', text2: 'Will sync when you are online.' });
+                router.replace('/(main)/(tabs)/Home');
+                return;
+            }
+
             if (id) {
                 const noteRef = doc(firestore, 'notes', id);
-                // Don't await so offline persistence caches it without hanging
-                updateDoc(noteRef, {
+                await updateDoc(noteRef, {
                     title: title.trim(),
                     note: note.trim(),
                     updatedAt: serverTimestamp(),
-                }).catch(err => console.log('Offline sync pending or error: ', err));
+                });
                 Toast.show({
                     type: 'success',
                     text1: 'Note updated',
                     text2: 'Your note has been updated successfully.',
                 });
             } else {
-                addDoc(collection(firestore, 'notes'), {
+                await addDoc(collection(firestore, 'notes'), {
                     uid: auth.currentUser.uid,
                     title: title.trim(),
                     note: note.trim(),
                     createdAt: new Date(),
-                }).catch(err => console.log('Offline sync pending or error: ', err));
+                });
                 Toast.show({
                     type: 'success',
                     text1: 'Note saved',
@@ -239,7 +288,7 @@ const getStyles = (colors: any) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingTop: Platform.OS === 'ios' ? 50 : 20,
+        paddingTop: Platform.OS === 'ios' ? 60 : 45,
         paddingBottom: 15,
         paddingHorizontal: 10,
         backgroundColor: colors.surface,
@@ -285,7 +334,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     },
     editorContent: {
         padding: 24,
-        paddingBottom: 100,
+        paddingBottom: 450,
     },
     titleInput: {
         fontSize: 28,

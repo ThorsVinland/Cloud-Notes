@@ -24,6 +24,7 @@ import Toast from 'react-native-toast-message';
 import ThemeSelector from '@/components/ThemeSelector';
 import CustomAlert from '@/components/CustomAlert';
 import { useNetwork } from '@/contexts/NetworkContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type MenuItem = {
     title: string;
@@ -63,6 +64,15 @@ export default function Profile() {
             if (snapshot.exists()) setImage(snapshot.val());
         });
 
+        // Load offline cached profile if available
+        AsyncStorage.getItem(`profile_${auth.currentUser.uid}`).then(cached => {
+            if (cached) {
+                const data = JSON.parse(cached);
+                if (!userName && data.name) setUserName(data.name);
+                if (!image && data.profileImage) setImage(data.profileImage);
+            }
+        });
+
         return () => {
             unsubscribeName();
             unsubscribeImage();
@@ -82,13 +92,23 @@ export default function Profile() {
     );
 
     const handleSaveName = async () => {
-        if (isOffline) {
-            Toast.show({ type: 'error', text1: 'You are offline', text2: 'Please connect to the internet to change your name.' });
-            return;
-        }
-
         if (newName.trim() && auth.currentUser) {
             try {
+                if (isOffline) {
+                    await AsyncStorage.setItem(`pending_profile_name_${auth.currentUser.uid}`, newName.trim());
+                    // Update cache for immediate offline feedback
+                    const cached = await AsyncStorage.getItem(`profile_${auth.currentUser.uid}`);
+                    if (cached) {
+                        const data = JSON.parse(cached);
+                        await AsyncStorage.setItem(`profile_${auth.currentUser.uid}`, JSON.stringify({ ...data, name: newName.trim() }));
+                    }
+                    setUserName(newName.trim());
+                    Toast.show({ type: 'info', text1: 'Name saved offline', text2: 'Will sync when online.' });
+                    setNameModalVisible(false);
+                    setNewName('');
+                    return;
+                }
+                
                 await set(ref(database, `users/${auth.currentUser.uid}/name`), newName.trim());
                 setNameModalVisible(false);
                 setNewName('');
@@ -117,10 +137,6 @@ export default function Profile() {
     };
 
     const pickImage = async () => {
-        if (isOffline) {
-            Toast.show({ type: 'error', text1: 'You are offline', text2: 'Please connect to the internet to change your photo.' });
-            return;
-        }
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
@@ -129,8 +145,22 @@ export default function Profile() {
         });
 
         if (!result.canceled) {
-            uploadImage(result.assets[0].uri);
-            setImageModalVisible(false);
+            const uri = result.assets[0].uri;
+            if (isOffline && auth.currentUser) {
+                await AsyncStorage.setItem(`pending_profile_image_${auth.currentUser.uid}`, uri);
+                // Update cache for immediate offline feedback
+                const cached = await AsyncStorage.getItem(`profile_${auth.currentUser.uid}`);
+                if (cached) {
+                    const data = JSON.parse(cached);
+                    await AsyncStorage.setItem(`profile_${auth.currentUser.uid}`, JSON.stringify({ ...data, profileImage: uri }));
+                }
+                setImage(uri);
+                Toast.show({ type: 'info', text1: 'Photo saved offline', text2: 'Will sync when online.' });
+                setImageModalVisible(false);
+            } else {
+                uploadImage(uri);
+                setImageModalVisible(false);
+            }
         }
     };
 
@@ -159,11 +189,20 @@ export default function Profile() {
     };
 
     const removeImage = async () => {
-        if (isOffline) {
-            Toast.show({ type: 'error', text1: 'You are offline', text2: 'Please connect to the internet to remove your photo.' });
-            return;
-        }
         if (auth.currentUser) {
+            if (isOffline) {
+                await AsyncStorage.setItem(`pending_profile_image_remove_${auth.currentUser.uid}`, 'true');
+                // Update cache for immediate offline feedback
+                const cached = await AsyncStorage.getItem(`profile_${auth.currentUser.uid}`);
+                if (cached) {
+                    const data = JSON.parse(cached);
+                    await AsyncStorage.setItem(`profile_${auth.currentUser.uid}`, JSON.stringify({ ...data, profileImage: null }));
+                }
+                setImage(null);
+                Toast.show({ type: 'info', text1: 'Photo removed offline', text2: 'Will sync when online.' });
+                setImageModalVisible(false);
+                return;
+            }
             await set(ref(database, `users/${auth.currentUser.uid}/profileImage`), null);
             Toast.show({ type: 'success', text1: 'Image removed' });
         }
@@ -171,7 +210,13 @@ export default function Profile() {
     };
 
     const accountItems: MenuItem[] = [
-        { title: 'Account Security', icon: 'lock-closed-outline', onPress: () => router.push('/(main)/AccountSecurity') },
+        { title: 'Account Security', icon: 'lock-closed-outline', onPress: () => {
+            if (isOffline) {
+                Toast.show({ type: 'error', text1: 'You are offline', text2: 'Account Security is unavailable offline.' });
+            } else {
+                router.push('/(main)/AccountSecurity');
+            }
+        }},
     ];
 
     const supportItems: MenuItem[] = [

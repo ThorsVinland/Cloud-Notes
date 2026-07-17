@@ -3,6 +3,12 @@ import Toast, { BaseToast, ErrorToast } from "react-native-toast-message";
 import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 import { NetworkProvider } from "@/contexts/NetworkContext";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { LogBox } from 'react-native';
+
+LogBox.ignoreLogs([
+  '@firebase/firestore: Firestore',
+  'Could not reach Cloud Firestore backend'
+]);
 
 function RootLayoutInner() {
   const { colors } = useTheme();

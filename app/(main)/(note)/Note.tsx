@@ -1,9 +1,11 @@
 import CustomAlert from '@/components/CustomAlert';
 import { useTheme } from "@/contexts/ThemeContext";
-import { firestore } from '@/FirebaseConfig';
+import { auth, firestore } from '@/FirebaseConfig';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Clipboard from 'expo-clipboard';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNetwork } from '@/contexts/NetworkContext';
 import { deleteDoc, doc } from 'firebase/firestore';
 import React, { useState } from 'react';
 import {
@@ -22,6 +24,7 @@ import Toast from 'react-native-toast-message';
 
 export default function Note() {
     const { colors, isDark } = useTheme();
+    const { isOffline } = useNetwork();
     const router = useRouter();
     const { id, title, note, createdAt, updatedAt } = useLocalSearchParams<{
         id?: string;
@@ -54,6 +57,34 @@ export default function Note() {
         if (!id) return;
         try {
             setLoading(true);
+
+            if (isOffline) {
+                const pending = await AsyncStorage.getItem(`pending_notes_${auth.currentUser?.uid}`);
+                let pendingNotes = pending ? JSON.parse(pending) : [];
+                
+                const existingAddIndex = pendingNotes.findIndex((p: any) => p.id === id && p.action === 'add');
+                if (existingAddIndex >= 0) {
+                    pendingNotes.splice(existingAddIndex, 1);
+                } else {
+                    pendingNotes.push({
+                        action: 'delete',
+                        id: id,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+                await AsyncStorage.setItem(`pending_notes_${auth.currentUser?.uid}`, JSON.stringify(pendingNotes));
+
+                const cached = await AsyncStorage.getItem(`notes_${auth.currentUser?.uid}`);
+                if (cached) {
+                    const localNotes = JSON.parse(cached).filter((n: any) => n.id !== id);
+                    await AsyncStorage.setItem(`notes_${auth.currentUser?.uid}`, JSON.stringify(localNotes));
+                }
+
+                Toast.show({ type: 'info', text1: 'Deleted Offline', text2: 'Will sync when online.' });
+                router.replace('/(main)/(tabs)/Home');
+                return;
+            }
+
             await deleteDoc(doc(firestore, 'notes', id));
             Toast.show({
                 type: 'success',

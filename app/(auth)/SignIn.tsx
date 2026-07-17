@@ -248,7 +248,7 @@ const getStyles = (colors: any) => StyleSheet.create({
         backgroundColor: colors.background,
     },
     headerContainer: {
-        paddingTop: Platform.OS === 'ios' ? 50 : 20,
+        paddingTop: Platform.OS === 'ios' ? 60 : 45,
         paddingHorizontal: 20,
         alignItems: 'flex-end',
     },

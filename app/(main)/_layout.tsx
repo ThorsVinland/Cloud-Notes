@@ -8,7 +8,8 @@ export default function MainLayout() {
             <Stack.Screen name="Notifications" />
             <Stack.Screen name="HelpCenter" />
             <Stack.Screen name="AccountSecurity" />
-            <Stack.Screen name="(note)" />
+            <Stack.Screen name="(note)/Note" />
+            <Stack.Screen name="(note)/NoteDetail" />
         </Stack>
     );
 }

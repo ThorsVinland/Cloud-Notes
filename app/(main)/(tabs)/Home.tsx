@@ -83,12 +83,15 @@ export default function Home() {
         }
     }, [isSyncing]);
 
-    const serializeTimestamp = (value?: Timestamp | Date | string | null) => {
+    const serializeTimestamp = (value?: any) => {
         if (!value) return '';
         if (typeof value === 'string') return value;
         if (value instanceof Date) return value.toISOString();
-        if (typeof (value as Timestamp).toDate === 'function') {
-            return (value as Timestamp).toDate().toISOString();
+        if (typeof value.toDate === 'function') {
+            return value.toDate().toISOString();
+        }
+        if (value.seconds !== undefined) {
+            return new Date(value.seconds * 1000).toISOString();
         }
         return '';
     };

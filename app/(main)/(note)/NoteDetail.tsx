@@ -105,13 +105,15 @@ export default function NoteDetail() {
                 const cached = await AsyncStorage.getItem(`notes_${auth.currentUser.uid}`);
                 if (cached) {
                     let localNotes = JSON.parse(cached);
-                    const newNoteObj = {
+                    const newNoteObj: any = {
                         id: newId,
                         title: title.trim(),
                         note: note.trim(),
-                        updatedAt: new Date().toISOString(),
-                        createdAt: id ? undefined : new Date().toISOString()
+                        updatedAt: new Date().toISOString()
                     };
+                    if (!id) {
+                        newNoteObj.createdAt = new Date().toISOString();
+                    }
                     if (id) {
                         localNotes = localNotes.map((n: any) => n.id === id ? { ...n, ...newNoteObj } : n);
                     } else {
